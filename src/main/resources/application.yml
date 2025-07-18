@@ -1,0 +1,4 @@
+
+optimistic.lock.retry:
+  count: 3
+  interval: 200
