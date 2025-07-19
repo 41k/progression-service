@@ -18,6 +18,7 @@ public class UserState {
 	private Map<String, Long> progressions = new HashMap<>();
 	@Builder.Default
 	private List<Reward> rewards = new ArrayList<>();
+	private Long version;
 
 	public void incrementProgression(String progressionKey, Long progressionIncrement) {
 		progressions.merge(progressionKey, progressionIncrement, Long::sum);

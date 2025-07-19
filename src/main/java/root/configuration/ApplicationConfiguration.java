@@ -11,8 +11,8 @@ public class ApplicationConfiguration {
 
 	@Bean
 	public RetryTemplate optimisticLockRetryTemplate(
-			@Value("${optimistic.lock.retry.count:3}") int maxAttempts,
-			@Value("${optimistic.lock.retry.interval:200}") long interval
+			@Value("${optimistic-lock.retry.count:3}") int maxAttempts,
+			@Value("${optimistic-lock.retry.interval:200}") long interval
 	) {
 		return RetryTemplate.builder()
 				.retryOn(OptimisticLockingFailureException.class)

@@ -1,4 +1,6 @@
 
-optimistic.lock.retry:
+optimistic-lock.retry:
   count: 3
   interval: 200
+
+user-state.document: progression-service-user-state
