@@ -16,10 +16,11 @@ import root.application.model.UserState;
 public class UserStateService {
 
 	private final RetryTemplate optimisticLockRetryTemplate;
-	private final UserStatePersistenceService persistenceService;
+	private final UserStatePersistenceService userStatePersistenceService;
+	private final ConfigurationService configurationService;
 
 	public Optional<UserState> findUserState(String userId) {
-		return updateUserStateIfPresent(userId, this::syncUserStateWithLatestConfigurationUpdates);
+		return updateUserStateIfPresent(userId, Function.identity());
 	}
 
 	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
@@ -28,13 +29,15 @@ public class UserStateService {
 				// todo: check that logging is done properly
 				log.warn("Optimistic lock happened during user state update for userId={}. Retrying, attempt {}", userId, context.getRetryCount());
 			}
-			return persistenceService.find(userId)
+			return userStatePersistenceService.find(userId)
+					.flatMap(this::syncUserStateWithLatestConfigurationUpdates)
 					.map(updateFunction)
-					.map(persistenceService::save);
+					.map(userStatePersistenceService::save);
 		});
 	}
 
-	private UserState syncUserStateWithLatestConfigurationUpdates(UserState userState) {
-		return userState; // todo
+	private Optional<UserState> syncUserStateWithLatestConfigurationUpdates(UserState userState) {
+		return configurationService.getUpdatedConfiguration(userState.getUserId(), userState.getConfiguration()) // todo refactor
+				.map(updatedConfiguration -> userState.toBuilder().configuration(updatedConfiguration).build());
 	}
 }

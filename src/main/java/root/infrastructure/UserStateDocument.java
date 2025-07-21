@@ -20,7 +20,7 @@ import root.application.model.UserProgressionsConfiguration;
 public class UserStateDocument {
 	@Id
 	private String id;
-	private UserProgressionsConfiguration progressionConfiguration;
+	private UserProgressionsConfiguration configuration;
 	private Map<String, Long> progressions;
 	@Version
 	private Long version;

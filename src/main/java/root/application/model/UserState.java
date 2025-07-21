@@ -9,11 +9,11 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class UserState {
 
 	private String userId;
-	private UserProgressionsConfiguration progressionConfiguration;
+	private UserProgressionsConfiguration configuration;
 	@Builder.Default
 	private Map<String, Long> progressions = new HashMap<>();
 	@Builder.Default

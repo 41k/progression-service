@@ -6,8 +6,8 @@ import lombok.Builder;
 
 @Builder
 public record UserProgressionsConfiguration(
-		long configurationId,
-		long creationTimestamp,
+		long id,
+		long updateTimestamp,
 		Map<String, ProgressionConfiguration> progressionsConfigurations
 ) {
 }

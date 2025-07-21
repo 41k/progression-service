@@ -29,7 +29,7 @@ public class UserStateAerospikePersistenceService implements UserStatePersistenc
 	private UserState mapToUserState(UserStateDocument userStateDocument) {
 		return UserState.builder()
 				.userId(userStateDocument.getId())
-				.progressionConfiguration(userStateDocument.getProgressionConfiguration())
+				.configuration(userStateDocument.getConfiguration())
 				.progressions(userStateDocument.getProgressions())
 				.version(userStateDocument.getVersion())
 				.build();
@@ -38,7 +38,7 @@ public class UserStateAerospikePersistenceService implements UserStatePersistenc
 	private UserStateDocument mapToUserStateDocument(UserState userState) {
 		return UserStateDocument.builder()
 				.id(userState.getUserId())
-				.progressionConfiguration(userState.getProgressionConfiguration())
+				.configuration(userState.getConfiguration())
 				.progressions(userState.getProgressions())
 				.version(userState.getVersion())
 				.build();

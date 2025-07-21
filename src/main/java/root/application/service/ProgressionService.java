@@ -33,7 +33,7 @@ public class ProgressionService {
 				userState -> makeProgression(event, userState, progressionHandlers)
 		);
 		updatedUserState.ifPresentOrElse(rewardService::sendRewards,
-				() -> log.debug("User state is not found for userId={}", userId));
+				() -> log.debug("User state is not found for userId={}, skipping {}", userId, event));
 
 	}
 
