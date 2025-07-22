@@ -30,14 +30,9 @@ public class UserStateService {
 				log.warn("Optimistic lock happened during user state update for userId={}. Retrying, attempt {}", userId, context.getRetryCount());
 			}
 			return userStatePersistenceService.find(userId)
-					.flatMap(this::syncUserStateWithLatestConfigurationUpdates)
+					.flatMap(configurationService::syncUserStateWithLatestConfigurationUpdates)
 					.map(updateFunction)
 					.map(userStatePersistenceService::save);
 		});
-	}
-
-	private Optional<UserState> syncUserStateWithLatestConfigurationUpdates(UserState userState) {
-		return configurationService.getUpdatedConfiguration(userState.getUserId(), userState.getConfiguration()) // todo refactor
-				.map(updatedConfiguration -> userState.toBuilder().configuration(updatedConfiguration).build());
 	}
 }

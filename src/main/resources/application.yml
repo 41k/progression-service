@@ -4,3 +4,5 @@ optimistic-lock.retry:
   interval: 200
 
 user-state.document: progression-service-user-state
+
+segmentation-refresh-period-millis: 300000
