@@ -1,4 +1,4 @@
-package root.infrastructure;
+package root.infrastructure.persistence;
 
 import java.util.Map;
 

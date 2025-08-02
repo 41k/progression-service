@@ -19,7 +19,7 @@ public class ConfigurationService {
 
 	private final ConfigurationPersistenceService configurationPersistenceService;
 	private final Clock clock;
-	@Value("${segmentation-refresh-period-millis:300000}")
+	@Value("${segmentation.refresh-period-millis:300000}")
 	private final long segmentationRefreshPeriodInMillis;
 	private final SegmentationService segmentationService;
 
