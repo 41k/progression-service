@@ -1,4 +1,4 @@
-package root.infrastructure.persistence;
+package root.infrastructure.persistence.state;
 
 import org.springframework.data.aerospike.repository.AerospikeRepository;
 import org.springframework.stereotype.Repository;

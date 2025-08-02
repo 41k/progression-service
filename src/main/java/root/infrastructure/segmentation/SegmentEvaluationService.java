@@ -1,5 +1,6 @@
 package root.infrastructure.segmentation;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Set;
 
@@ -11,26 +12,30 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import lombok.RequiredArgsConstructor;
 import root.application.service.SegmentationService;
 
 @Service
+@RequiredArgsConstructor
 public class SegmentEvaluationService implements SegmentationService {
 
-	private final String url;
-	private final RestTemplate restTemplate;
 
-	public SegmentEvaluationService(
-			@Value("${segmentation.url}") String url,
-			RestTemplate segmentationRestTemplate
-	) {
-		this.url = url;
-		this.restTemplate = segmentationRestTemplate;
+	private final Clock clock;
+	@Value("${segmentation.refresh-period-millis:300000}") // todo: introduce segmentation properties
+	private final long segmentationRefreshPeriodInMillis;
+	@Value("${segmentation.url}")
+	private final String url;
+	private final RestTemplate segmentationRestTemplate;
+
+	@Override
+	public boolean shouldReevaluateSegmentation(long lastSegmentationTimestamp) {
+		return clock.millis() - lastSegmentationTimestamp > segmentationRefreshPeriodInMillis;
 	}
 
 	@Override
 	public String evaluate(String userId, Set<String> segments) {
 		var request = buildRequest(userId, segments);
-		var response = restTemplate.exchange(url, HttpMethod.POST, request, SegmentsEvaluationResponse.class).getBody();
+		var response = segmentationRestTemplate.exchange(url, HttpMethod.POST, request, SegmentsEvaluationResponse.class).getBody();
 		return response.segment();
 	}
 
