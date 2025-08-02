@@ -1,8 +1,12 @@
 package root.configuration;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +14,25 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import root.configuration.properties.ConfigurationsCacheProperties;
+import root.configuration.properties.SegmentationProperties;
+import root.infrastructure.persistence.configuration.ConfigurationEntity;
+import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
+
 @Configuration
+@EnableConfigurationProperties({
+		SegmentationProperties.class,
+		ConfigurationsCacheProperties.class
+})
 public class ApplicationConfiguration {
+
+	@Bean
+	public Clock clock() {
+		return Clock.systemUTC();
+	}
 
 	@Bean
 	public RetryTemplate optimisticLockRetryTemplate(
@@ -28,12 +49,25 @@ public class ApplicationConfiguration {
 	@Bean
 	public RestTemplate segmentationRestTemplate(
 			RestTemplateBuilder restTemplateBuilder,
-			@Value("${segmentation.connection-timeout-millis:10000}") long connectionTimeoutMillis,
-			@Value("${segmentation.read-timeout-millis:10000}") long readTimeoutMillis
+			SegmentationProperties properties
 	) {
 		return restTemplateBuilder
-				.setConnectTimeout(Duration.ofMillis(connectionTimeoutMillis))
-				.setReadTimeout(Duration.ofMillis(readTimeoutMillis))
+				.setConnectTimeout(Duration.ofMillis(properties.connectionTimeoutMillis()))
+				.setReadTimeout(Duration.ofMillis(properties.readTimeoutMillis()))
 				.build();
+	}
+
+	@Bean
+	public Cache<String, Map<Long, ConfigurationEntity>> configurationsCache(
+			ConfigurationsCacheProperties cacheProperties,
+			ConfigurationsCacheLoader cacheLoader
+	) {
+		Cache<String, Map<Long, ConfigurationEntity>> cache = Caffeine.newBuilder()
+				.expireAfterWrite(cacheProperties.expirationMillis(), TimeUnit.MILLISECONDS)
+				.refreshAfterWrite(cacheProperties.refreshMillis(), TimeUnit.MILLISECONDS)
+				.build(cacheLoader);
+		String cacheName = cacheProperties.name();
+		cache.put(cacheName, cacheLoader.load(cacheName));
+		return cache;
 	}
 }

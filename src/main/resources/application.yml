@@ -9,4 +9,9 @@ segmentation:
   url: localhost:8080/segmentation-service/api/v1/evaluate
   connection-timeout-millis: 10000
   read-timeout-millis: 10000
-  refresh-period-millis: 300000
+  reevaluation-period-millis: 300000
+
+configurations-cache:
+  name: configurations-cache
+  expiration-millis: 600000
+  refresh-millis: 300000

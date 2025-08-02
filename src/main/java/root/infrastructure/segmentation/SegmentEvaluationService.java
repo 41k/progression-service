@@ -1,9 +1,9 @@
 package root.infrastructure.segmentation;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,26 +11,29 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import lombok.RequiredArgsConstructor;
 import root.application.service.SegmentationService;
+import root.configuration.properties.SegmentationProperties;
 
 @Service
+@RequiredArgsConstructor
 public class SegmentEvaluationService implements SegmentationService {
 
-	private final String url;
-	private final RestTemplate restTemplate;
 
-	public SegmentEvaluationService(
-			@Value("${segmentation.url}") String url,
-			RestTemplate segmentationRestTemplate
-	) {
-		this.url = url;
-		this.restTemplate = segmentationRestTemplate;
+	private final Clock clock;
+	private final SegmentationProperties properties;
+	private final RestTemplate segmentationRestTemplate;
+
+	@Override
+	public boolean shouldReevaluateSegmentation(long lastReevaluationTimestamp) {
+		return clock.millis() - lastReevaluationTimestamp > properties.reevaluationPeriodMillis();
 	}
 
 	@Override
 	public String evaluate(String userId, Set<String> segments) {
 		var request = buildRequest(userId, segments);
-		var response = restTemplate.exchange(url, HttpMethod.POST, request, SegmentsEvaluationResponse.class).getBody();
+		var response = segmentationRestTemplate.exchange(
+				properties.url(), HttpMethod.POST, request, SegmentsEvaluationResponse.class).getBody();
 		return response.segment();
 	}
 
