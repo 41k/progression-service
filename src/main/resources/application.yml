@@ -1,3 +1,12 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate.ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db-migration/master.xml
+
 
 optimistic-lock.retry:
   count: 3

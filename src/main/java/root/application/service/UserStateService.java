@@ -43,8 +43,10 @@ public class UserStateService {
 
 	private Optional<UserState> syncUserStateWithLatestConfigurationUpdates(UserState userState) {
 		var currentConfiguration = userState.getConfiguration();
-		var segmentedConfiguration = configurationService.getCachedActiveConfigurationById(currentConfiguration.id());
+		var configurationId = currentConfiguration.id();
+		var segmentedConfiguration = configurationService.getCachedActiveConfigurationById(configurationId);
 		if (segmentedConfiguration == null) {
+			log.debug("Configuration with id={} is no longer active/exist for user with id={}", configurationId, userState.getUserId());
 			return Optional.empty();
 		}
 		if (segmentationService.shouldReevaluateSegmentation(currentConfiguration.updateTimestamp())) {

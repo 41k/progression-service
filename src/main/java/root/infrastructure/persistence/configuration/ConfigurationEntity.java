@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 import root.application.model.ProgressionConfiguration;
 
 @Data
-@Builder(toBuilder = true)
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "progressions_configurations") // todo: add liquibase configs
+@Table(name = "progressions_configurations")
 public class ConfigurationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
