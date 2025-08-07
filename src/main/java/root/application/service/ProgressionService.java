@@ -15,11 +15,15 @@ public class ProgressionService {
 	private final RewardService rewardService;
 
 	public void process(Event event) {
-		var progressionHandlers = getEligibleProgressionHandlers(event);
-		if (progressionHandlers.isEmpty()) {
-			log.debug("No eligible progression handlers for {}", event);
+		try {
+			var progressionHandlers = getEligibleProgressionHandlers(event);
+			if (progressionHandlers.isEmpty()) {
+				log.debug("No eligible progression handlers for {}", event);
+			}
+			process(event, progressionHandlers);
+		} catch (Exception e) {
+			log.error("Failed to process {}", event, e);
 		}
-		process(event, progressionHandlers);
 	}
 
 	private List<ProgressionHandler> getEligibleProgressionHandlers(Event event) {

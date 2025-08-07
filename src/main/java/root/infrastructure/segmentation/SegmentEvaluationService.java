@@ -25,8 +25,8 @@ public class SegmentEvaluationService implements SegmentationService {
 	private final RestTemplate segmentationRestTemplate;
 
 	@Override
-	public boolean shouldReevaluateSegmentation(long lastReevaluationTimestamp) {
-		return clock.millis() - lastReevaluationTimestamp > properties.reevaluationPeriodMillis();
+	public boolean shouldReevaluateSegmentation(long lastEvaluationTimestamp) {
+		return clock.millis() - lastEvaluationTimestamp > properties.reevaluationPeriodMillis();
 	}
 
 	@Override

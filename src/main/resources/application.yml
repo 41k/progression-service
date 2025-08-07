@@ -15,3 +15,8 @@ configurations-cache:
   name: configurations-cache
   expiration-millis: 600000
   refresh-millis: 300000
+
+kafka-topics:
+  produced:
+    rewards-topic:
+      name: rewards
