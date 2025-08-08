@@ -1,9 +1,11 @@
-package root.application.service;
+package root.application.service.progression_handler;
 
-import root.application.model.Event;
+import root.application.model.event.Event;
 import root.application.model.UserState;
 
 public interface ProgressionHandler {
+
+	Long INITIAL_PROGRESSION_VALUE = 0L;
 
 	boolean isEligible(Event event);
 

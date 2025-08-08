@@ -12,7 +12,7 @@ import root.application.service.RewardService;
 @RequiredArgsConstructor
 public class AsyncRewardService implements RewardService {
 
-	@Value("${kafka-topics.produced.rewards-topic.name}")
+	@Value("${rewards-topic}")
 	private final String topic;
 	private final KafkaTemplate<String, Object> kafkaTemplate;
 

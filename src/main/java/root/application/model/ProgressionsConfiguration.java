@@ -11,13 +11,13 @@ public record ProgressionsConfiguration(
 		long startTimestamp,
 		long endTimestamp,
 		long updateTimestamp,
-		Map<String, Map<String, ProgressionConfiguration>> segmentedProgressionsConfiguration
+		Map<String, Map<ProgressionType, ProgressionConfiguration>> segmentedProgressionsConfiguration
 ) {
 	public Set<String> getAllSegments() {
 		return segmentedProgressionsConfiguration.keySet();
 	}
 
-	public Map<String, ProgressionConfiguration> getUserProgressionsConfiguration(String segment) {
+	public Map<ProgressionType, ProgressionConfiguration> getUserProgressionsConfiguration(String segment) {
 		return segmentedProgressionsConfiguration.get(segment);
 	}
 

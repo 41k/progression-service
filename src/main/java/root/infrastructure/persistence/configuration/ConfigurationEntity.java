@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import root.application.model.ProgressionConfiguration;
+import root.application.model.ProgressionType;
 
 @Data
 @Builder
@@ -36,5 +37,5 @@ public class ConfigurationEntity {
 	@Valid
 	@Convert(converter = SegmentedProgressionsConfigurationConverter.class)
 	@Column(columnDefinition = "MEDIUMBLOB")
-	private Map<String, Map<String, ProgressionConfiguration>> segmentedProgressionsConfiguration;
+	private Map<String, Map<ProgressionType, ProgressionConfiguration>> segmentedProgressionsConfiguration;
 }

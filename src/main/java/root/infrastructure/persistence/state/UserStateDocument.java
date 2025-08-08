@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import root.application.model.ProgressionType;
 import root.application.model.UserProgressionsConfiguration;
 
 @Data
@@ -21,7 +22,7 @@ public class UserStateDocument {
 	@Id
 	private String id;
 	private UserProgressionsConfiguration configuration;
-	private Map<String, Long> progressions;
+	private Map<ProgressionType, Long> progressions;
 	@Version
 	private Long version;
 }

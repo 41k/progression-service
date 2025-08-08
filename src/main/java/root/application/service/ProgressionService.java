@@ -1,16 +1,25 @@
 package root.application.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import root.application.model.Event;
+import root.application.model.event.Event;
 import root.application.model.UserState;
+import root.application.service.progression_handler.ProgressionHandler;
+import root.configuration.properties.ProgressionProperties;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProgressionService {
 
+	private final ProgressionProperties progressionProperties;
+	private final Map<String, ProgressionHandler> progressionHandlers;
 	private final UserStateService userStateService;
 	private final RewardService rewardService;
 
@@ -19,6 +28,7 @@ public class ProgressionService {
 			var progressionHandlers = getEligibleProgressionHandlers(event);
 			if (progressionHandlers.isEmpty()) {
 				log.debug("No eligible progression handlers for {}", event);
+				return;
 			}
 			process(event, progressionHandlers);
 		} catch (Exception e) {
@@ -27,7 +37,11 @@ public class ProgressionService {
 	}
 
 	private List<ProgressionHandler> getEligibleProgressionHandlers(Event event) {
-		return List.of(); // todo
+		return progressionProperties.getEventSourceProperties(event.getSource()).progressionHandlers()
+				.stream()
+				.map(progressionHandlers::get)
+				.filter(Objects::nonNull)
+				.toList();
 	}
 
 	private void process(Event event, List<ProgressionHandler> progressionHandlers) {
@@ -46,7 +60,11 @@ public class ProgressionService {
 	                                  List<ProgressionHandler> progressionHandlers) {
 		var updatedUserState = userState;
 		for (var progressionHandler : progressionHandlers) {
-			updatedUserState = progressionHandler.handle(event, updatedUserState);
+			try {
+				updatedUserState = progressionHandler.handle(event, updatedUserState);
+			} catch (Exception e) {
+				log.error("{} failed to handle {}", progressionHandler.getName(), event, e);
+			}
 		}
 		return updatedUserState;
 	}

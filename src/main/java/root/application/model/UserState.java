@@ -15,13 +15,17 @@ public class UserState {
 	private String userId;
 	private UserProgressionsConfiguration configuration;
 	@Builder.Default
-	private Map<String, Long> progressions = new HashMap<>();
+	private Map<ProgressionType, Long> progressions = new HashMap<>();
 	@Builder.Default
 	private List<Reward> rewards = new ArrayList<>();
 	private Long version;
 
-	public void incrementProgression(String progressionKey, Long progressionIncrement) {
-		progressions.merge(progressionKey, progressionIncrement, Long::sum);
+	public ProgressionConfiguration getProgressionConfiguration(ProgressionType type) {
+		return configuration.progressionsConfiguration().get(type);
+	}
+
+	public void incrementProgression(ProgressionType progressionType, Long progressionIncrement) {
+		progressions.merge(progressionType, progressionIncrement, Long::sum);
 	}
 
 	public void addReward(Reward reward) {

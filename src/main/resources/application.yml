@@ -25,7 +25,12 @@ configurations-cache:
   expiration-millis: 600000
   refresh-millis: 300000
 
-kafka-topics:
-  produced:
-    rewards-topic:
-      name: rewards
+rewards-topic: rewards
+
+progression.sources:
+  SOURCE_1:
+    enabled: true
+    topic: source-1
+    progression-handlers:
+      - source1EventWonProgressionHandler
+      - source1EventTotalProgressionHandler

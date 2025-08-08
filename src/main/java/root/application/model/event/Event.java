@@ -1,4 +1,4 @@
-package root.application.model;
+package root.application.model.event;
 
 public interface Event {
 
