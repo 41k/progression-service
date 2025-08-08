@@ -18,6 +18,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import root.configuration.properties.ConfigurationsCacheProperties;
+import root.configuration.properties.ProgressionProperties;
 import root.configuration.properties.SegmentationProperties;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
@@ -25,7 +26,8 @@ import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
 @Configuration
 @EnableConfigurationProperties({
 		SegmentationProperties.class,
-		ConfigurationsCacheProperties.class
+		ConfigurationsCacheProperties.class,
+		ProgressionProperties.class
 })
 public class ApplicationConfiguration {
 
