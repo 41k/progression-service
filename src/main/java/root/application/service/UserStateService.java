@@ -13,6 +13,7 @@ import root.application.model.ProgressionsConfiguration;
 import root.application.model.UserProgressionsConfiguration;
 import root.application.model.UserState;
 
+// todo: tests
 @Service
 @Slf4j
 @RequiredArgsConstructor
