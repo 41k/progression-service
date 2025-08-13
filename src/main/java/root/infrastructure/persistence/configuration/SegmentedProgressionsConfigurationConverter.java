@@ -8,6 +8,7 @@ import root.application.model.ProgressionConfiguration;
 import root.application.model.ProgressionType;
 import root.infrastructure.persistence.converter.ZipConverter;
 
+// todo: tests
 public class SegmentedProgressionsConfigurationConverter
 		extends ZipConverter<Map<String, Map<ProgressionType, ProgressionConfiguration>>> {
 

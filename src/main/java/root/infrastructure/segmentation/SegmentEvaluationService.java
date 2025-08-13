@@ -19,7 +19,6 @@ import root.configuration.properties.SegmentationProperties;
 @RequiredArgsConstructor
 public class SegmentEvaluationService implements SegmentationService {
 
-
 	private final Clock clock;
 	private final SegmentationProperties properties;
 	private final RestTemplate segmentationRestTemplate;

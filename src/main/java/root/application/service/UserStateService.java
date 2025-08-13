@@ -24,6 +24,7 @@ public class UserStateService {
 	private final SegmentationService segmentationService;
 	private final Clock clock;
 
+	// todo: public API for progressions retrieval
 	public Optional<UserState> findUserState(String userId) {
 		return updateUserStateIfPresent(userId, Function.identity());
 	}
@@ -31,8 +32,7 @@ public class UserStateService {
 	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
 		return optimisticLockRetryTemplate.execute(context -> {
 			if (context.getRetryCount() > 0) {
-				// todo: check that logging is done properly
-				log.warn("Optimistic lock happened during user state update for userId={}. Retrying, attempt {}", userId, context.getRetryCount());
+				log.warn("Optimistic lock happened during user state update for userId={}. Retry {}", userId, context.getRetryCount());
 			}
 			return userStatePersistenceService.find(userId)
 					.flatMap(this::syncUserStateWithLatestConfigurationUpdates)

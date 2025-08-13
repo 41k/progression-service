@@ -15,6 +15,7 @@ import root.application.model.ProgressionsConfiguration;
 import root.application.service.ProgressionsConfigurationService;
 import root.configuration.properties.ConfigurationsCacheProperties;
 
+// todo: test
 @Service
 @RequiredArgsConstructor
 public class ConfigurationCachingAndPersistenceService implements ProgressionsConfigurationService {

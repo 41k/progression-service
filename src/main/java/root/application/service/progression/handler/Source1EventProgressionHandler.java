@@ -1,4 +1,4 @@
-package root.application.service.progression_handler;
+package root.application.service.progression.handler;
 
 import root.application.model.ProgressionType;
 import root.application.model.UserState;

@@ -24,10 +24,6 @@ public class UserState {
 		return configuration.progressionsConfiguration().get(type);
 	}
 
-	public void incrementProgression(ProgressionType progressionType, Long progressionIncrement) {
-		progressions.merge(progressionType, progressionIncrement, Long::sum);
-	}
-
 	public void addReward(Reward reward) {
 		rewards.add(reward);
 	}
