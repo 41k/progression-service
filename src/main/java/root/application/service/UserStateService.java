@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import root.application.model.ProgressionsConfiguration;
-import root.application.model.UserProgressionsConfiguration;
+import root.application.model.Configuration;
+import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 
 @Service
@@ -20,54 +20,55 @@ public class UserStateService {
 
 	private final RetryTemplate optimisticLockRetryTemplate;
 	private final UserStatePersistenceService userStatePersistenceService;
-	private final ProgressionsConfigurationService configurationService;
+	private final ConfigurationService configurationService;
 	private final SegmentationService segmentationService;
 	private final Clock clock;
 
+	// todo: public API for progressions retrieval
+	// todo: public API for thresholds retrieval
 	public Optional<UserState> findUserState(String userId) {
-		return updateUserStateIfPresent(userId, Function.identity());
+		return userStatePersistenceService.find(userId);
 	}
 
 	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
 		return optimisticLockRetryTemplate.execute(context -> {
 			if (context.getRetryCount() > 0) {
-				// todo: check that logging is done properly
-				log.warn("Optimistic lock happened during user state update for userId={}. Retrying, attempt {}", userId, context.getRetryCount());
+				log.warn("Optimistic lock happened during user state update for userId={}. Retry {}", userId, context.getRetryCount());
 			}
 			return userStatePersistenceService.find(userId)
-					.flatMap(this::syncUserStateWithLatestConfigurationUpdates)
+					.map(this::syncUserStateWithLatestConfigurationUpdates)
 					.map(updateFunction)
 					.map(userStatePersistenceService::save);
 		});
 	}
 
-	private Optional<UserState> syncUserStateWithLatestConfigurationUpdates(UserState userState) {
-		var currentConfiguration = userState.getConfiguration();
-		var configurationId = currentConfiguration.id();
+	private UserState syncUserStateWithLatestConfigurationUpdates(UserState userState) {
+		var userConfiguration = userState.getConfiguration();
+		var configurationId = userConfiguration.id();
 		var segmentedConfiguration = configurationService.getCachedActiveConfigurationById(configurationId);
 		if (segmentedConfiguration == null) {
 			log.debug("Configuration with id={} is no longer active/exist for user with id={}", configurationId, userState.getUserId());
-			return Optional.empty();
+			return null;
 		}
-		if (segmentationService.shouldReevaluateSegmentation(currentConfiguration.updateTimestamp())) {
+		if (segmentationService.shouldReevaluateSegmentation(userConfiguration.updateTimestamp())) {
 			return reevaluateSegmentation(userState, segmentedConfiguration);
 		}
-		return Optional.of(userState);
+		return userState;
 	}
 
-	private Optional<UserState> reevaluateSegmentation(UserState userState, ProgressionsConfiguration segmentedConfiguration) {
+	private UserState reevaluateSegmentation(UserState userState, Configuration segmentedConfiguration) {
 		var userId = userState.getUserId();
 		var segments = segmentedConfiguration.getAllSegments();
 		var userSegment = segmentationService.evaluate(userId, segments);
 		if (userSegment == null) {
 			log.debug("Configuration with id={} is not applicable anymore for user with id={}", segmentedConfiguration.id(), userId);
-			return Optional.empty();
+			return null;
 		}
-		var userProgressionsConfiguration = UserProgressionsConfiguration.builder()
+		var userConfiguration = UserConfiguration.builder()
 				.id(segmentedConfiguration.id())
 				.updateTimestamp(clock.millis())
 				.progressionsConfiguration(segmentedConfiguration.getUserProgressionsConfiguration(userSegment))
 				.build();
-		return Optional.of(userState.toBuilder().configuration(userProgressionsConfiguration).build());
+		return userState.toBuilder().configuration(userConfiguration).build();
 	}
 }

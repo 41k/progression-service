@@ -5,7 +5,7 @@ import java.util.Map;
 import lombok.Builder;
 
 @Builder
-public record UserProgressionsConfiguration(
+public record UserConfiguration(
 		long id,
 		long updateTimestamp,
 		Map<ProgressionType, ProgressionConfiguration> progressionsConfiguration

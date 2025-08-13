@@ -5,8 +5,8 @@ import java.util.Set;
 
 import lombok.Builder;
 
-@Builder
-public record ProgressionsConfiguration(
+@Builder(toBuilder = true)
+public record Configuration(
 		long id,
 		long startTimestamp,
 		long endTimestamp,

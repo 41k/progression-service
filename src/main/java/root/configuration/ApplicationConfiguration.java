@@ -64,11 +64,11 @@ public class ApplicationConfiguration {
 			ConfigurationsCacheProperties cacheProperties,
 			ConfigurationsCacheLoader cacheLoader
 	) {
-		Cache<String, Map<Long, ConfigurationEntity>> cache = Caffeine.newBuilder()
+		var cache = Caffeine.newBuilder()
 				.expireAfterWrite(cacheProperties.expirationMillis(), TimeUnit.MILLISECONDS)
 				.refreshAfterWrite(cacheProperties.refreshMillis(), TimeUnit.MILLISECONDS)
 				.build(cacheLoader);
-		String cacheName = cacheProperties.name();
+		var cacheName = cacheProperties.name();
 		cache.put(cacheName, cacheLoader.load(cacheName));
 		return cache;
 	}

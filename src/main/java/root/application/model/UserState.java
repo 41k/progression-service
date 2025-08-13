@@ -13,7 +13,7 @@ import lombok.Data;
 public class UserState {
 
 	private String userId;
-	private UserProgressionsConfiguration configuration;
+	private UserConfiguration configuration;
 	@Builder.Default
 	private Map<ProgressionType, Long> progressions = new HashMap<>();
 	@Builder.Default
@@ -22,10 +22,6 @@ public class UserState {
 
 	public ProgressionConfiguration getProgressionConfiguration(ProgressionType type) {
 		return configuration.progressionsConfiguration().get(type);
-	}
-
-	public void incrementProgression(ProgressionType progressionType, Long progressionIncrement) {
-		progressions.merge(progressionType, progressionIncrement, Long::sum);
 	}
 
 	public void addReward(Reward reward) {

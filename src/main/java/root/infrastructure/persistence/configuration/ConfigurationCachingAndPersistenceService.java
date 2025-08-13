@@ -11,13 +11,13 @@ import com.github.benmanes.caffeine.cache.CacheLoader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import root.application.model.ProgressionsConfiguration;
-import root.application.service.ProgressionsConfigurationService;
+import root.application.model.Configuration;
+import root.application.service.ConfigurationService;
 import root.configuration.properties.ConfigurationsCacheProperties;
 
 @Service
 @RequiredArgsConstructor
-public class ConfigurationCachingAndPersistenceService implements ProgressionsConfigurationService {
+public class ConfigurationCachingAndPersistenceService implements ConfigurationService {
 
 	private final ConfigurationsCacheProperties cacheProperties;
 	private final Cache<String, Map<Long, ConfigurationEntity>> cache;
@@ -25,7 +25,7 @@ public class ConfigurationCachingAndPersistenceService implements ProgressionsCo
 	private final Clock clock;
 
 	@Override
-	public ProgressionsConfiguration getCachedActiveConfigurationById(long configurationId) {
+	public Configuration getCachedActiveConfigurationById(long configurationId) {
 		var configurations = cache.get(cacheProperties.name(), this::loadCache);
 		return Optional.ofNullable(configurations.get(configurationId))
 				.map(this::toModel)
@@ -38,8 +38,8 @@ public class ConfigurationCachingAndPersistenceService implements ProgressionsCo
 		return cacheLoader.load(cacheName);
 	}
 
-	private ProgressionsConfiguration toModel(ConfigurationEntity entity) {
-		return ProgressionsConfiguration.builder()
+	private Configuration toModel(ConfigurationEntity entity) {
+		return Configuration.builder()
 				.id(entity.getId())
 				.startTimestamp(entity.getStartTimestamp())
 				.endTimestamp(entity.getEndTimestamp())

@@ -2,17 +2,17 @@ package root.application.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import root.application.model.ProgressionUpdateTask;
 import root.application.model.event.Event;
-import root.application.model.UserState;
-import root.application.service.progression_handler.ProgressionHandler;
+import root.application.service.progression.handler.ProgressionHandler;
 import root.configuration.properties.ProgressionProperties;
 
+// todo: consumer for source-1
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -40,32 +40,15 @@ public class ProgressionService {
 		return progressionProperties.getEventSourceProperties(event.getSource()).progressionHandlers()
 				.stream()
 				.map(progressionHandlers::get)
-				.filter(Objects::nonNull)
+				.filter(progressionHandler -> progressionHandler != null && progressionHandler.isEligible(event))
 				.toList();
 	}
 
 	private void process(Event event, List<ProgressionHandler> progressionHandlers) {
 		var userId = event.getUserId();
-		var updatedUserState = userStateService.updateUserStateIfPresent(
-				userId,
-				userState -> makeProgression(event, userState, progressionHandlers)
-		);
+		var progressionUpdateTask = new ProgressionUpdateTask(event, progressionHandlers);
+		var updatedUserState = userStateService.updateUserStateIfPresent(userId, progressionUpdateTask);
 		updatedUserState.ifPresentOrElse(rewardService::sendRewards,
 				() -> log.debug("User state is not found for userId={}, skipping {}", userId, event));
-
-	}
-
-	private UserState makeProgression(Event event,
-	                                  UserState userState,
-	                                  List<ProgressionHandler> progressionHandlers) {
-		var updatedUserState = userState;
-		for (var progressionHandler : progressionHandlers) {
-			try {
-				updatedUserState = progressionHandler.handle(event, updatedUserState);
-			} catch (Exception e) {
-				log.error("{} failed to handle {}", progressionHandler.getName(), event, e);
-			}
-		}
-		return updatedUserState;
 	}
 }

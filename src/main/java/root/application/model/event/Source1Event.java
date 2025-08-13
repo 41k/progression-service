@@ -24,6 +24,6 @@ public class Source1Event implements Event {
 
 	@Override
 	public String getUserId() {
-		return String.valueOf(userId);
+		return userId == null ? null : String.valueOf(userId);
 	}
 }

@@ -19,11 +19,11 @@ import root.application.model.ProgressionConfiguration;
 import root.application.model.ProgressionType;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "progressions_configurations")
+@Table(name = "configurations")
 public class ConfigurationEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
