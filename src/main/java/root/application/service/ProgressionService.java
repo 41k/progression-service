@@ -12,7 +12,6 @@ import root.application.model.event.Event;
 import root.application.service.progression.handler.ProgressionHandler;
 import root.configuration.properties.ProgressionProperties;
 
-// todo: consumer for source-1
 @Service
 @Slf4j
 @RequiredArgsConstructor
