@@ -1,14 +1,21 @@
 package unit.root.infrastructure.persistence.configuration;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static unit.TestData.CONFIGURATION;
+import static unit.TestData.CONFIGURATION_DTO;
 import static unit.TestData.CONFIGURATION_ENTITY;
+import static unit.TestData.CONFIGURATION_ID;
+import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
 
 import java.time.Clock;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +31,7 @@ import lombok.SneakyThrows;
 import root.configuration.properties.ConfigurationsCacheProperties;
 import root.infrastructure.persistence.configuration.ConfigurationCachingAndPersistenceService;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
+import root.infrastructure.persistence.configuration.ConfigurationRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class ConfigurationCachingAndPersistenceServiceTest {
@@ -57,9 +65,77 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	@Mock
 	private CacheLoader<String, Map<Long, ConfigurationEntity>> cacheLoader;
 	@Mock
+	private ConfigurationRepository repository;
+	@Mock
 	private Clock clock;
 	@InjectMocks
 	private ConfigurationCachingAndPersistenceService configurationCachingAndPersistenceService;
+
+	@Test
+	void shouldCreateConfiguration() {
+		// given
+		var configurationEntityToSave = CONFIGURATION_ENTITY.toBuilder().id(null).build();
+
+		// and
+		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
+		when(repository.save(configurationEntityToSave)).thenReturn(CONFIGURATION_ENTITY);
+
+		// when
+		var id = configurationCachingAndPersistenceService.createConfiguration(CONFIGURATION_DTO);
+
+		// then
+		assertThat(id).isEqualTo(CONFIGURATION_ID);
+	}
+
+	@Test
+	void shouldReturnConfigurationById() {
+		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.of(CONFIGURATION_ENTITY));
+
+		var configuration = configurationCachingAndPersistenceService.getConfigurationById(CONFIGURATION_ID);
+
+		assertThat(configuration).isEqualTo(CONFIGURATION);
+	}
+
+	@Test
+	void shouldThrowException_ifConfigurationIsNotFoundById() {
+		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> configurationCachingAndPersistenceService.getConfigurationById(CONFIGURATION_ID))
+				.isInstanceOf(NoSuchElementException.class)
+				.hasMessage("Configuration is not found by id=" + CONFIGURATION_ID);
+	}
+
+	@Test
+	void shouldUpdateConfiguration() {
+		// given
+		var existingConfiguration = ConfigurationEntity.builder().id(CONFIGURATION_ID).updateTimestamp(10L).build();
+
+		// and
+		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.of(existingConfiguration));
+		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
+
+		// when
+		configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_DTO);
+
+		// then
+		verify(repository).save(CONFIGURATION_ENTITY);
+	}
+
+	@Test
+	void shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
+		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_DTO))
+				.isInstanceOf(NoSuchElementException.class)
+				.hasMessage("Configuration is not found by id=" + CONFIGURATION_ID);
+	}
+
+	@Test
+	void shouldDeleteConfiguration() {
+		configurationCachingAndPersistenceService.deleteConfiguration(CONFIGURATION_ID);
+
+		verify(repository).deleteById(CONFIGURATION_ID);
+	}
 
 	@Test
 	void shouldReturnCachedActiveConfigurationById() {

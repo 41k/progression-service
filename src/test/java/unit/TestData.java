@@ -7,14 +7,17 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.experimental.UtilityClass;
+import root.application.model.Configuration;
 import root.application.model.ProgressionConfiguration;
 import root.application.model.ProgressionType;
-import root.application.model.Configuration;
 import root.application.model.Reward;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 import root.application.model.event.Event;
 import root.application.model.event.Source1Event;
+import root.infrastructure.dto.ConfigurationDto;
+import root.infrastructure.dto.ProgressionConfigurationDto;
+import root.infrastructure.dto.RewardDto;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.state.UserStateDocument;
 
@@ -30,8 +33,20 @@ public class TestData {
 	public static final String SEGMENT_1 = "segment-1";
 	public static final String SEGMENT_2 = "segment-2";
 	public static final Set<String> SEGMENTS = Set.of(SEGMENT_1, SEGMENT_2);
+	public static final RewardDto REWARD_DTO_1 = new RewardDto(1, 100);
+	public static final RewardDto REWARD_DTO_2 = new RewardDto(1, 200);
 	public static final Reward REWARD_1 = new Reward(1, 100);
 	public static final Reward REWARD_2 = new Reward(1, 200);
+
+	public static final Map<ProgressionType, ProgressionConfigurationDto> PROGRESSIONS_CONFIGURATION_DTO_1 = Map.of(
+			SOURCE_1_TOTAL, new ProgressionConfigurationDto(10, REWARD_DTO_1),
+			SOURCE_1_WON, new ProgressionConfigurationDto(5, REWARD_DTO_1)
+	);
+
+	public static final Map<ProgressionType, ProgressionConfigurationDto> PROGRESSIONS_CONFIGURATION_DTO_2 = Map.of(
+			SOURCE_1_TOTAL, new ProgressionConfigurationDto(15, REWARD_DTO_2),
+			SOURCE_1_WON, new ProgressionConfigurationDto(8, REWARD_DTO_2)
+	);
 
 	public static final Map<ProgressionType, ProgressionConfiguration> PROGRESSIONS_CONFIGURATION_1 = Map.of(
 			SOURCE_1_TOTAL, new ProgressionConfiguration(10, REWARD_1),
@@ -43,10 +58,22 @@ public class TestData {
 			SOURCE_1_WON, new ProgressionConfiguration(8, REWARD_2)
 	);
 
+	public static final Map<String, Map<ProgressionType, ProgressionConfigurationDto>> SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO = Map.of(
+			SEGMENT_1, PROGRESSIONS_CONFIGURATION_DTO_1,
+			SEGMENT_2, PROGRESSIONS_CONFIGURATION_DTO_2
+	);
+
 	public static final Map<String, Map<ProgressionType, ProgressionConfiguration>> SEGMENTED_PROGRESSIONS_CONFIGURATION = Map.of(
 			SEGMENT_1, PROGRESSIONS_CONFIGURATION_1,
 			SEGMENT_2, PROGRESSIONS_CONFIGURATION_2
 	);
+
+	public static final ConfigurationDto CONFIGURATION_DTO =
+			ConfigurationDto.builder()
+					.startTimestamp(CONFIGURATION_START_TIMESTAMP)
+					.endTimestamp(CONFIGURATION_END_TIMESTAMP)
+					.segmentedProgressionsConfiguration(SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO)
+					.build();
 
 	public static final Configuration CONFIGURATION =
 			Configuration.builder()

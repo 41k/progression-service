@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import root.application.model.Configuration;
 import root.application.model.ProgressionConfiguration;
 import root.application.model.ProgressionType;
 
@@ -38,4 +39,14 @@ public class ConfigurationEntity {
 	@Convert(converter = SegmentedProgressionsConfigurationConverter.class)
 	@Column(columnDefinition = "MEDIUMBLOB")
 	private Map<String, Map<ProgressionType, ProgressionConfiguration>> segmentedProgressionsConfiguration;
+
+	public Configuration toModel() {
+		return Configuration.builder()
+				.id(id)
+				.startTimestamp(startTimestamp)
+				.endTimestamp(endTimestamp)
+				.updateTimestamp(updateTimestamp)
+				.segmentedProgressionsConfiguration(segmentedProgressionsConfiguration)
+				.build();
+	}
 }

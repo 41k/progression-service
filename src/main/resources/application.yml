@@ -1,4 +1,5 @@
 spring:
+  application.name: progression-service
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
   jpa:
