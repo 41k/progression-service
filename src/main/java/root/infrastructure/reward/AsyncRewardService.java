@@ -1,4 +1,4 @@
-package root.infrastructure.rewards;
+package root.infrastructure.reward;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

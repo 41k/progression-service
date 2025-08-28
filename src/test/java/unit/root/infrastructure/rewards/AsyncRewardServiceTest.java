@@ -20,8 +20,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import root.application.model.Reward;
 import root.application.model.UserState;
-import root.infrastructure.rewards.AsyncRewardService;
-import root.infrastructure.rewards.RewardsMessage;
+import root.infrastructure.reward.AsyncRewardService;
+import root.infrastructure.reward.RewardsMessage;
 
 @ExtendWith(MockitoExtension.class)
 public class AsyncRewardServiceTest {

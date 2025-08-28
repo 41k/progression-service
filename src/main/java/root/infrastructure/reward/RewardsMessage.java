@@ -1,4 +1,4 @@
-package root.infrastructure.rewards;
+package root.infrastructure.reward;
 
 import java.util.List;
 
