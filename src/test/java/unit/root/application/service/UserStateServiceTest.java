@@ -20,6 +20,7 @@ import static unit.TestData.USER_STATE;
 
 import java.time.Clock;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -76,21 +77,32 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldFindUserSate() {
+	void shouldFindActiveUserSate() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
+		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 
-		var userState = userStateService.findUserState(USER_ID).get();
+		var userState = userStateService.findActiveUserState(USER_ID);
 
 		assertThat(userState).isEqualTo(USER_STATE);
 	}
 
 	@Test
-	void shouldReturnEmptyOptional_ifUserStateIsNotFound() {
+	void shouldThrowException_ifUserStateIsNotFound() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.empty());
 
-		var userStateOptional = userStateService.findUserState(USER_ID);
+		assertThatThrownBy(() -> userStateService.findActiveUserState(USER_ID))
+				.isInstanceOf(NoSuchElementException.class)
+				.hasMessage("Active user state is not found by id=" + USER_ID);
+	}
 
-		assertThat(userStateOptional.isEmpty()).isTrue();
+	@Test
+	void shouldThrowException_ifUserStateIsNotActive() {
+		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
+		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
+
+		assertThatThrownBy(() -> userStateService.findActiveUserState(USER_ID))
+				.isInstanceOf(NoSuchElementException.class)
+				.hasMessage("Active user state is not found by id=" + USER_ID);
 	}
 
 	@Test

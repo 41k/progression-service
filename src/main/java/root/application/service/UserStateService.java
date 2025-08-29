@@ -1,6 +1,7 @@
 package root.application.service;
 
 import java.time.Clock;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -24,10 +25,10 @@ public class UserStateService {
 	private final SegmentationService segmentationService;
 	private final Clock clock;
 
-	// todo: public API for progressions retrieval
-	// todo: public API for thresholds retrieval
-	public Optional<UserState> findUserState(String userId) {
-		return userStatePersistenceService.find(userId);
+	public UserState findActiveUserState(String userId) {
+		return userStatePersistenceService.find(userId)
+				.filter(this::hasActiveConfiguration)
+				.orElseThrow(() -> new NoSuchElementException("Active user state is not found by id=" + userId));
 	}
 
 	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
@@ -70,5 +71,11 @@ public class UserStateService {
 				.progressionsConfiguration(segmentedConfiguration.getUserProgressionsConfiguration(userSegment))
 				.build();
 		return userState.toBuilder().configuration(userConfiguration).build();
+	}
+
+	private boolean hasActiveConfiguration(UserState userState) {
+		var configurationId = userState.getConfiguration().id();
+		var configuration = configurationService.getCachedActiveConfigurationById(configurationId);
+		return configuration != null;
 	}
 }
