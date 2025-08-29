@@ -1,0 +1,39 @@
+{
+  "startTimestamp": 400,
+  "endTimestamp": 1300,
+  "updateTimestamp": 500,
+  "segmentedProgressionsConfiguration": {
+    "segment-2": {
+      "SOURCE_1_TOTAL": {
+        "progressionTarget": 10,
+        "reward": {
+          "unitId": 1,
+          "amount": 150
+        }
+      },
+      "SOURCE_1_WON": {
+        "progressionTarget": 5,
+        "reward": {
+          "unitId": 2,
+          "amount": 300
+        }
+      }
+    },
+    "segment-1": {
+      "SOURCE_1_TOTAL": {
+        "progressionTarget": 7,
+        "reward": {
+          "unitId": 2,
+          "amount": 90
+        }
+      },
+      "SOURCE_1_WON": {
+        "progressionTarget": 9,
+        "reward": {
+          "unitId": 1,
+          "amount": 600
+        }
+      }
+    }
+  }
+}

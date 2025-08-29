@@ -1,6 +1,7 @@
 package root.infrastructure.persistence.configuration;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -33,6 +34,12 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 	public Long createConfiguration(ConfigurationDto configurationDto) {
 		var configuration = toEntity(configurationDto);
 		return repository.save(configuration).getId();
+	}
+
+	// todo: test
+	@Override
+	public List<Configuration> getConfigurations() {
+		return repository.findAll().stream().map(ConfigurationEntity::toModel).toList();
 	}
 
 	@Override

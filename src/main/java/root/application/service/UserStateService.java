@@ -14,6 +14,7 @@ import root.application.model.Configuration;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 
+// todo: UserState initialization flow based on login
 @Service
 @Slf4j
 @RequiredArgsConstructor

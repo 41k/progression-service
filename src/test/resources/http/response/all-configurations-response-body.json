@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "startTimestamp": 400,
+    "endTimestamp": 1300
+  },
+  {
+    "id": 2,
+    "startTimestamp": 500,
+    "endTimestamp": 1500
+  }
+]

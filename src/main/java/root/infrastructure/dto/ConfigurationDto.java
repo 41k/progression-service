@@ -9,7 +9,6 @@ import lombok.Builder;
 import root.application.model.ProgressionType;
 import root.infrastructure.dto.validation.TimeRangeValidation;
 
-// todo: check validation via functional tests
 @TimeRangeValidation
 @Builder
 public record ConfigurationDto(

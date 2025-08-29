@@ -1,0 +1,14 @@
+spring:
+  main.allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:mariadb://${embedded.mariadb.host}:${embedded.mariadb.port}/${embedded.mariadb.schema}
+    username: ${embedded.mariadb.user}
+    password: ${embedded.mariadb.password}
+  aerospike.hosts: ${embedded.aerospike.host}:${embedded.aerospike.port}
+  data:
+    aerospike.namespace: ${embedded.aerospike.namespace}
+  kafka:
+    bootstrap-servers: ${embedded.kafka.brokerList}
+    consumer.auto-offset-reset: earliest
+
+embedded.kafka.topicsToCreate: source-1
