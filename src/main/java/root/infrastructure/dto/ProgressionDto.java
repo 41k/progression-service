@@ -4,7 +4,7 @@ import lombok.Builder;
 import root.application.model.Reward;
 
 @Builder
-public record ProgressionStateDto(
+public record ProgressionDto(
 		long currentValue,
 		long targetValue,
 		Reward reward

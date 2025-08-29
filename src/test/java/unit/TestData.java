@@ -21,6 +21,8 @@ import root.infrastructure.dto.RewardDto;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.state.UserStateDocument;
 
+// todo: rename to UnitTestData
+// todo: move tests from unit.root.* to unit.* package
 @UtilityClass
 public class TestData {
 
