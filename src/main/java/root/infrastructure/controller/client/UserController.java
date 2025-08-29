@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import root.application.model.UserState;
 import root.application.service.UserStateService;
-import root.infrastructure.dto.ProgressionStateDto;
+import root.infrastructure.dto.ProgressionDto;
 import root.infrastructure.dto.UserStateDto;
 
 // todo: functional tests
@@ -36,7 +36,7 @@ public class UserController {
 		var progressions = userState.getProgressions();
 		var progressionState = progressionsConfiguration.entrySet().stream().collect(Collectors.toMap(
 				Map.Entry::getKey,
-				entry -> ProgressionStateDto.builder()
+				entry -> ProgressionDto.builder()
 						.currentValue(progressions.getOrDefault(entry.getKey(), 0L))
 						.targetValue(entry.getValue().progressionTarget())
 						.reward(entry.getValue().reward())

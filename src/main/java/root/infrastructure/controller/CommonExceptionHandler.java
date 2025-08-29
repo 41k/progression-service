@@ -3,6 +3,7 @@ package root.infrastructure.controller;
 import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -30,7 +31,10 @@ public class CommonExceptionHandler {
 		return message;
 	}
 
-	@ExceptionHandler(ConstraintViolationException.class)
+	@ExceptionHandler({
+			ConstraintViolationException.class,
+			MethodArgumentNotValidException.class
+	})
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public String handleValidationException(Exception e) {
 		var message = "Validation failure: %s".formatted(e.getMessage());

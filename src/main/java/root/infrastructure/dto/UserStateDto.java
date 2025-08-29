@@ -6,6 +6,6 @@ import root.application.model.ProgressionType;
 
 public record UserStateDto(
 		String userId,
-		Map<ProgressionType, ProgressionStateDto> progressionState
+		Map<ProgressionType, ProgressionDto> progressionState
 ) {
 }

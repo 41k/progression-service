@@ -11,6 +11,13 @@ public record ProgressionConfigurationDto(
 		@NotNull @Valid
 		RewardDto reward
 ) {
+	public static ProgressionConfigurationDto fromModel(ProgressionConfiguration configuration) {
+		return new ProgressionConfigurationDto(
+				configuration.progressionTarget(),
+				RewardDto.fromModel(configuration.reward())
+		);
+	}
+
 	public ProgressionConfiguration toModel() {
 		return new ProgressionConfiguration(progressionTarget, reward.toModel());
 	}

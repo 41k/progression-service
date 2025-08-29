@@ -11,6 +11,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.aerospike.repository.config.EnableAerospikeRepositories;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +23,7 @@ import root.configuration.properties.ProgressionProperties;
 import root.configuration.properties.SegmentationProperties;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
+import root.infrastructure.persistence.state.UserStateDocumentRepository;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -29,6 +31,7 @@ import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
 		ConfigurationsCacheProperties.class,
 		ProgressionProperties.class
 })
+@EnableAerospikeRepositories(basePackageClasses = {UserStateDocumentRepository.class})
 public class ApplicationConfiguration {
 
 	@Bean

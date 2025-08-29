@@ -1,6 +1,7 @@
 package root.infrastructure.persistence.configuration;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -17,7 +18,7 @@ import lombok.SneakyThrows;
 import root.application.model.Configuration;
 import root.application.service.ConfigurationService;
 import root.configuration.properties.ConfigurationsCacheProperties;
-import root.infrastructure.dto.ConfigurationDto;
+import root.infrastructure.dto.ConfigurationRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +31,14 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 	private final Clock clock;
 
 	@Override
-	public Long createConfiguration(ConfigurationDto configurationDto) {
-		var configuration = toEntity(configurationDto);
+	public Long createConfiguration(ConfigurationRequest request) {
+		var configuration = toEntity(request);
 		return repository.save(configuration).getId();
+	}
+
+	@Override
+	public List<Configuration> getConfigurations() {
+		return repository.findAll().stream().map(ConfigurationEntity::toModel).toList();
 	}
 
 	@Override
@@ -42,9 +48,9 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 
 	@Override
 	@Transactional
-	public void updateConfiguration(Long id, ConfigurationDto configurationDto) {
+	public void updateConfiguration(Long id, ConfigurationRequest request) {
 		var existingConfiguration = findById(id);
-		var updatedConfiguration = toEntity(configurationDto).toBuilder().id(existingConfiguration.getId()).build();
+		var updatedConfiguration = toEntity(request).toBuilder().id(existingConfiguration.getId()).build();
 		repository.save(updatedConfiguration);
 	}
 
@@ -67,8 +73,8 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 		return cacheLoader.load(cacheName);
 	}
 
-	private ConfigurationEntity toEntity(ConfigurationDto dto) {
-		var segmentedProgressionsConfiguration = dto.segmentedProgressionsConfiguration().entrySet().stream()
+	private ConfigurationEntity toEntity(ConfigurationRequest request) {
+		var segmentedProgressionsConfiguration = request.segmentedProgressionsConfiguration().entrySet().stream()
 				.collect(Collectors.toMap(
 						Map.Entry::getKey,
 						e1 -> e1.getValue().entrySet().stream().collect(Collectors.toMap(
@@ -76,8 +82,8 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 								e2 -> e2.getValue().toModel()
 						))));
 		return ConfigurationEntity.builder()
-				.startTimestamp(dto.startTimestamp())
-				.endTimestamp(dto.endTimestamp())
+				.startTimestamp(request.startTimestamp())
+				.endTimestamp(request.endTimestamp())
 				.updateTimestamp(clock.millis())
 				.segmentedProgressionsConfiguration(segmentedProgressionsConfiguration)
 				.build();

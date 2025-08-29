@@ -7,6 +7,15 @@ spring:
     open-in-view: false
   liquibase:
     change-log: classpath:db-migration/master.xml
+  kafka:
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 
 optimistic-lock.retry:

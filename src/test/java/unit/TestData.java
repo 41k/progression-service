@@ -15,12 +15,14 @@ import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 import root.application.model.event.Event;
 import root.application.model.event.Source1Event;
-import root.infrastructure.dto.ConfigurationDto;
+import root.infrastructure.dto.ConfigurationRequest;
 import root.infrastructure.dto.ProgressionConfigurationDto;
 import root.infrastructure.dto.RewardDto;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.state.UserStateDocument;
 
+// todo: rename to UnitTestData
+// todo: move tests from unit.root.* to unit.* package
 @UtilityClass
 public class TestData {
 
@@ -68,8 +70,8 @@ public class TestData {
 			SEGMENT_2, PROGRESSIONS_CONFIGURATION_2
 	);
 
-	public static final ConfigurationDto CONFIGURATION_DTO =
-			ConfigurationDto.builder()
+	public static final ConfigurationRequest CONFIGURATION_REQUEST =
+			ConfigurationRequest.builder()
 					.startTimestamp(CONFIGURATION_START_TIMESTAMP)
 					.endTimestamp(CONFIGURATION_END_TIMESTAMP)
 					.segmentedProgressionsConfiguration(SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO)

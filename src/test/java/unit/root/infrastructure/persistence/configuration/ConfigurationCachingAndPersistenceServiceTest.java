@@ -7,12 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_DTO;
+import static unit.TestData.CONFIGURATION_REQUEST;
 import static unit.TestData.CONFIGURATION_ENTITY;
 import static unit.TestData.CONFIGURATION_ID;
 import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -81,7 +82,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		when(repository.save(configurationEntityToSave)).thenReturn(CONFIGURATION_ENTITY);
 
 		// when
-		var id = configurationCachingAndPersistenceService.createConfiguration(CONFIGURATION_DTO);
+		var id = configurationCachingAndPersistenceService.createConfiguration(CONFIGURATION_REQUEST);
 
 		// then
 		assertThat(id).isEqualTo(CONFIGURATION_ID);
@@ -106,6 +107,15 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	}
 
 	@Test
+	void shouldReturnAllConfigurations() {
+		when(repository.findAll()).thenReturn(List.of(CONFIGURATION_ENTITY, CONFIGURATION_ENTITY));
+
+		var configurations = configurationCachingAndPersistenceService.getConfigurations();
+
+		assertThat(configurations).isEqualTo(List.of(CONFIGURATION, CONFIGURATION));
+	}
+
+	@Test
 	void shouldUpdateConfiguration() {
 		// given
 		var existingConfiguration = ConfigurationEntity.builder().id(CONFIGURATION_ID).updateTimestamp(10L).build();
@@ -115,7 +125,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
 
 		// when
-		configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_DTO);
+		configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST);
 
 		// then
 		verify(repository).save(CONFIGURATION_ENTITY);
@@ -125,7 +135,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_DTO))
+		assertThatThrownBy(() -> configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))
 				.isInstanceOf(NoSuchElementException.class)
 				.hasMessage("Configuration is not found by id=" + CONFIGURATION_ID);
 	}

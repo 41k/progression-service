@@ -2,11 +2,11 @@ package root.infrastructure.dto.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import root.infrastructure.dto.ConfigurationDto;
+import root.infrastructure.dto.ConfigurationRequest;
 
-public class TimeRangeValidator implements ConstraintValidator<TimeRangeValidation, ConfigurationDto> {
+public class TimeRangeValidator implements ConstraintValidator<TimeRangeValidation, ConfigurationRequest> {
 	@Override
-	public boolean isValid(ConfigurationDto dto, ConstraintValidatorContext context) {
-		return dto.endTimestamp() > dto.startTimestamp();
+	public boolean isValid(ConfigurationRequest request, ConstraintValidatorContext context) {
+		return request.endTimestamp() > request.startTimestamp();
 	}
 }
