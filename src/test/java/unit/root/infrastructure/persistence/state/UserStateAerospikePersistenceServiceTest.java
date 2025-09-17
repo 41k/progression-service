@@ -15,12 +15,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import root.infrastructure.persistence.state.UserStateAerospikePersistenceService;
-import root.infrastructure.persistence.state.UserStateDocumentRepository;
+import root.infrastructure.persistence.state.UserStateRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class UserStateAerospikePersistenceServiceTest {
 	@Mock
-	private UserStateDocumentRepository repository;
+	private UserStateRepository repository;
 	@InjectMocks
 	private UserStateAerospikePersistenceService persistenceService;
 

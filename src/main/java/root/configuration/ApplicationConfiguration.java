@@ -23,7 +23,7 @@ import root.configuration.properties.ProgressionProperties;
 import root.configuration.properties.SegmentationProperties;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
-import root.infrastructure.persistence.state.UserStateDocumentRepository;
+import root.infrastructure.persistence.state.UserStateRepository;
 
 @Configuration
 @EnableConfigurationProperties({
@@ -31,7 +31,7 @@ import root.infrastructure.persistence.state.UserStateDocumentRepository;
 		ConfigurationsCacheProperties.class,
 		ProgressionProperties.class
 })
-@EnableAerospikeRepositories(basePackageClasses = {UserStateDocumentRepository.class})
+@EnableAerospikeRepositories(basePackageClasses = {UserStateRepository.class})
 public class ApplicationConfiguration {
 
 	@Bean

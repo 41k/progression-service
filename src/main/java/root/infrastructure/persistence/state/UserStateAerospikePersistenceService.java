@@ -12,7 +12,7 @@ import root.application.service.UserStatePersistenceService;
 @RequiredArgsConstructor
 public class UserStateAerospikePersistenceService implements UserStatePersistenceService {
 
-	private final UserStateDocumentRepository repository;
+	private final UserStateRepository repository;
 
 	@Override
 	public Optional<UserState> find(String userId) {

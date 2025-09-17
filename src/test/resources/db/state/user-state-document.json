@@ -1,0 +1,26 @@
+{
+  "id": "1000",
+  "configuration": {
+    "id": 1,
+    "updateTimestamp": 600,
+    "progressionsConfiguration": {
+      "SOURCE_1_TOTAL": {
+        "progressionTarget": 15,
+        "reward": {
+          "unitId": 1,
+          "amount": 200
+        }
+      },
+      "SOURCE_1_WON": {
+        "progressionTarget": 8,
+        "reward": {
+          "unitId": 1,
+          "amount": 200
+        }
+      }
+    }
+  },
+  "progressions": {
+    "SOURCE_1_TOTAL": 5
+  }
+}

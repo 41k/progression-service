@@ -1,0 +1,21 @@
+{
+  "userId": "1000",
+  "progressionState": {
+    "SOURCE_1_TOTAL": {
+      "currentValue": 5,
+      "targetValue": 15,
+      "reward": {
+        "unitId": 1,
+        "amount": 200
+      }
+    },
+    "SOURCE_1_WON": {
+      "currentValue": 0,
+      "targetValue": 8,
+      "reward": {
+        "unitId": 1,
+        "amount": 200
+      }
+    }
+  }
+}

@@ -12,3 +12,6 @@ spring:
     consumer.auto-offset-reset: earliest
 
 embedded.kafka.topicsToCreate: source-1
+
+configurations-cache:
+  refresh-millis: 100
