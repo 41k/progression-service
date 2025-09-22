@@ -24,5 +24,5 @@ public class UserStateDocument {
 	private UserConfiguration configuration;
 	private Map<ProgressionType, Long> progressions;
 	@Version
-	private Long version;
+	private long version;
 }

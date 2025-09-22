@@ -1,6 +1,12 @@
 package root.infrastructure.segmentation;
 
-public record SegmentsEvaluationResponse(
-		String segment
-) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SegmentsEvaluationResponse {
+	private String segment;
 }

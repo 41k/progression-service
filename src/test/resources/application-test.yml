@@ -5,13 +5,15 @@ spring:
     username: ${embedded.mariadb.user}
     password: ${embedded.mariadb.password}
   aerospike.hosts: ${embedded.aerospike.host}:${embedded.aerospike.port}
-  data:
-    aerospike.namespace: ${embedded.aerospike.namespace}
+  data.aerospike:
+      namespace: ${embedded.aerospike.namespace}
+      scans-enabled: true
   kafka:
     bootstrap-servers: ${embedded.kafka.brokerList}
     consumer.auto-offset-reset: earliest
 
-embedded.kafka.topicsToCreate: source-1
+embedded.kafka.topicsToCreate: login, source-1
 
-configurations-cache:
-  refresh-millis: 100
+segmentation.url: http://localhost:${wiremock.server.port}/segmentation-service/api/v1/evaluate
+
+configurations-cache.refresh-millis: 100

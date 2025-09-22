@@ -33,7 +33,7 @@ public class SegmentEvaluationService implements SegmentationService {
 		var request = buildRequest(userId, segments);
 		var response = segmentationRestTemplate.exchange(
 				properties.url(), HttpMethod.POST, request, SegmentsEvaluationResponse.class).getBody();
-		return response.segment();
+		return response.getSegment();
 	}
 
 	private HttpEntity<SegmentsEvaluationRequest> buildRequest(String userId, Set<String> segments) {

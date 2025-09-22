@@ -48,6 +48,6 @@ public class ProgressionService {
 		var progressionUpdateTask = new ProgressionUpdateTask(event, progressionHandlers);
 		var updatedUserState = userStateService.updateUserStateIfPresent(userId, progressionUpdateTask);
 		updatedUserState.ifPresentOrElse(rewardService::sendRewards,
-				() -> log.debug("User state is not found for userId={}, skipping {}", userId, event));
+				() -> log.debug("User[{}] state is not found, skipping {}", userId, event));
 	}
 }

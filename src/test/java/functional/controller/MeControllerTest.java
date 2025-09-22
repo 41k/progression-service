@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import functional.FunctionalTest;
 
+// todo: rename to UserStateRetrievalFlowTest and move to functional.flow package
 public class MeControllerTest extends FunctionalTest {
 
 	private static final String ME_URI = "/progression-service/public/v1/me";
@@ -24,7 +25,7 @@ public class MeControllerTest extends FunctionalTest {
 	void shouldReturnUserState() {
 		// given
 		configurationRepository.saveAndFlush(configurationEntity());
-		userStateRepository.save(userState());
+		userStateRepository.save(userState(0));
 
 		// when
 		var response = given()
@@ -43,7 +44,7 @@ public class MeControllerTest extends FunctionalTest {
 	@Test
 	void shouldNotReturnUserState_ifThereIsNoActiveConfigurationLinkedToIt() {
 		// given
-		userStateRepository.save(userState());
+		userStateRepository.save(userState(0));
 
 		// when
 		var response = given()

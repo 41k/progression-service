@@ -7,9 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_REQUEST;
 import static unit.TestData.CONFIGURATION_ENTITY;
 import static unit.TestData.CONFIGURATION_ID;
+import static unit.TestData.CONFIGURATION_REQUEST;
 import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
 
 import java.time.Clock;
@@ -30,28 +30,28 @@ import com.github.benmanes.caffeine.cache.CacheLoader;
 
 import lombok.SneakyThrows;
 import root.configuration.properties.ConfigurationsCacheProperties;
-import root.infrastructure.persistence.configuration.ConfigurationCachingAndPersistenceService;
+import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class ConfigurationCachingAndPersistenceServiceTest {
+public class ConfigurationPersistenceServiceTest {
 
 	private static final String CACHE_NAME = "configurations-cache";
 	private static final ConfigurationEntity CONFIGURATION_ENTITY_1 = CONFIGURATION_ENTITY.toBuilder()
 			.id(1L)
 			.startTimestamp(100L)
-			.endTimestamp(300L)
+			.endTimestamp(200L)
 			.build();
 	private static final ConfigurationEntity CONFIGURATION_ENTITY_2 = CONFIGURATION_ENTITY.toBuilder()
 			.id(2L)
-			.startTimestamp(200L)
-			.endTimestamp(500L)
+			.startTimestamp(300L)
+			.endTimestamp(400L)
 			.build();
 	private static final ConfigurationEntity CONFIGURATION_ENTITY_3 = CONFIGURATION_ENTITY.toBuilder()
 			.id(3L)
-			.startTimestamp(100L)
-			.endTimestamp(400L)
+			.startTimestamp(500L)
+			.endTimestamp(600L)
 			.build();
 	private static final Map<Long, ConfigurationEntity> CACHED_CONFIGURATIONS = Map.of(
 			CONFIGURATION_ENTITY_1.getId(), CONFIGURATION_ENTITY_1,
@@ -70,7 +70,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	@Mock
 	private Clock clock;
 	@InjectMocks
-	private ConfigurationCachingAndPersistenceService configurationCachingAndPersistenceService;
+	private ConfigurationPersistenceService configurationPersistenceService;
 
 	@Test
 	void shouldCreateConfiguration() {
@@ -82,7 +82,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		when(repository.save(configurationEntityToSave)).thenReturn(CONFIGURATION_ENTITY);
 
 		// when
-		var id = configurationCachingAndPersistenceService.createConfiguration(CONFIGURATION_REQUEST);
+		var id = configurationPersistenceService.createConfiguration(CONFIGURATION_REQUEST);
 
 		// then
 		assertThat(id).isEqualTo(CONFIGURATION_ID);
@@ -92,7 +92,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldReturnConfigurationById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.of(CONFIGURATION_ENTITY));
 
-		var configuration = configurationCachingAndPersistenceService.getConfigurationById(CONFIGURATION_ID);
+		var configuration = configurationPersistenceService.getConfigurationById(CONFIGURATION_ID);
 
 		assertThat(configuration).isEqualTo(CONFIGURATION);
 	}
@@ -101,7 +101,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> configurationCachingAndPersistenceService.getConfigurationById(CONFIGURATION_ID))
+		assertThatThrownBy(() -> configurationPersistenceService.getConfigurationById(CONFIGURATION_ID))
 				.isInstanceOf(NoSuchElementException.class)
 				.hasMessage("Configuration is not found by id=" + CONFIGURATION_ID);
 	}
@@ -110,7 +110,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldReturnAllConfigurations() {
 		when(repository.findAll()).thenReturn(List.of(CONFIGURATION_ENTITY, CONFIGURATION_ENTITY));
 
-		var configurations = configurationCachingAndPersistenceService.getConfigurations();
+		var configurations = configurationPersistenceService.getConfigurations();
 
 		assertThat(configurations).isEqualTo(List.of(CONFIGURATION, CONFIGURATION));
 	}
@@ -125,7 +125,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
 
 		// when
-		configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST);
+		configurationPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST);
 
 		// then
 		verify(repository).save(CONFIGURATION_ENTITY);
@@ -135,14 +135,14 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
-		assertThatThrownBy(() -> configurationCachingAndPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))
+		assertThatThrownBy(() -> configurationPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))
 				.isInstanceOf(NoSuchElementException.class)
 				.hasMessage("Configuration is not found by id=" + CONFIGURATION_ID);
 	}
 
 	@Test
 	void shouldDeleteConfiguration() {
-		configurationCachingAndPersistenceService.deleteConfiguration(CONFIGURATION_ID);
+		configurationPersistenceService.deleteConfiguration(CONFIGURATION_ID);
 
 		verify(repository).deleteById(CONFIGURATION_ID);
 	}
@@ -152,16 +152,16 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		// given
 		var expectedConfiguration = CONFIGURATION.toBuilder()
 				.id(3L)
-				.startTimestamp(100L)
-				.endTimestamp(400L)
+				.startTimestamp(500L)
+				.endTimestamp(600L)
 				.build();
 
 		// and
 		mockCache();
-		when(clock.millis()).thenReturn(250L);
+		when(clock.millis()).thenReturn(550L);
 
 		// when
-		var configuration = configurationCachingAndPersistenceService.getCachedActiveConfigurationById(3L);
+		var configuration = configurationPersistenceService.getActiveConfigurationById(3L);
 
 		// then
 		assertThat(configuration).isEqualTo(expectedConfiguration);
@@ -173,7 +173,7 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 		mockCache();
 
 		// when
-		var configuration = configurationCachingAndPersistenceService.getCachedActiveConfigurationById(4L);
+		var configuration = configurationPersistenceService.getActiveConfigurationById(4L);
 
 		// then
 		assertThat(configuration).isNull();
@@ -183,10 +183,43 @@ public class ConfigurationCachingAndPersistenceServiceTest {
 	void shouldReturnNull_ifConfigurationIsFoundByIdButIsNotActive() {
 		// given
 		mockCache();
-		when(clock.millis()).thenReturn(600L);
+		when(clock.millis()).thenReturn(700L);
 
 		// when
-		var configuration = configurationCachingAndPersistenceService.getCachedActiveConfigurationById(2L);
+		var configuration = configurationPersistenceService.getActiveConfigurationById(2L);
+
+		// then
+		assertThat(configuration).isNull();
+	}
+
+	@Test
+	void shouldReturnCachedActiveConfiguration() {
+		// given
+		var expectedConfiguration = CONFIGURATION.toBuilder()
+				.id(2L)
+				.startTimestamp(300L)
+				.endTimestamp(400L)
+				.build();
+
+		// and
+		mockCache();
+		when(clock.millis()).thenReturn(350L);
+
+		// when
+		var configuration = configurationPersistenceService.getActiveConfiguration();
+
+		// then
+		assertThat(configuration).isEqualTo(expectedConfiguration);
+	}
+
+	@Test
+	void shouldReturnNull_ifThereIsNoActiveConfiguration() {
+		// given
+		mockCache();
+		when(clock.millis()).thenReturn(700L);
+
+		// when
+		var configuration = configurationPersistenceService.getActiveConfiguration();
 
 		// then
 		assertThat(configuration).isNull();

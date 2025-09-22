@@ -22,7 +22,7 @@ import root.infrastructure.dto.ConfigurationRequest;
 
 @Service
 @RequiredArgsConstructor
-public class ConfigurationCachingAndPersistenceService implements ConfigurationService {
+public class ConfigurationPersistenceService implements ConfigurationService {
 
 	private final ConfigurationsCacheProperties cacheProperties;
 	private final Cache<String, Map<Long, ConfigurationEntity>> cache;
@@ -30,23 +30,21 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 	private final ConfigurationRepository repository;
 	private final Clock clock;
 
-	@Override
+	// todo: validate that time range does not intersect with other configurations
 	public Long createConfiguration(ConfigurationRequest request) {
 		var configuration = toEntity(request);
 		return repository.save(configuration).getId();
 	}
 
-	@Override
 	public List<Configuration> getConfigurations() {
 		return repository.findAll().stream().map(ConfigurationEntity::toModel).toList();
 	}
 
-	@Override
 	public Configuration getConfigurationById(Long id) {
 		return findById(id).toModel();
 	}
 
-	@Override
+	// todo: validate that time range does not intersect with other configurations
 	@Transactional
 	public void updateConfiguration(Long id, ConfigurationRequest request) {
 		var existingConfiguration = findById(id);
@@ -54,13 +52,22 @@ public class ConfigurationCachingAndPersistenceService implements ConfigurationS
 		repository.save(updatedConfiguration);
 	}
 
-	@Override
 	public void deleteConfiguration(Long id) {
 		repository.deleteById(id);
 	}
 
 	@Override
-	public Configuration getCachedActiveConfigurationById(long configurationId) {
+	public Configuration getActiveConfiguration() {
+		return cache.get(cacheProperties.name(), this::loadCache).values()
+				.stream()
+				.map(ConfigurationEntity::toModel)
+				.filter(configuration -> configuration.isActive(clock.millis()))
+				.findFirst()
+				.orElse(null);
+	}
+
+	@Override
+	public Configuration getActiveConfigurationById(long configurationId) {
 		var configurations = cache.get(cacheProperties.name(), this::loadCache);
 		return Optional.ofNullable(configurations.get(configurationId))
 				.map(ConfigurationEntity::toModel)

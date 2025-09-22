@@ -25,7 +25,7 @@ optimistic-lock.retry:
 user-state.document: progression-service-user-state
 
 segmentation:
-  url: localhost:8080/segmentation-service/api/v1/evaluate
+  url: http://localhost:8080/segmentation-service/api/v1/evaluate
   connection-timeout-millis: 10000
   read-timeout-millis: 10000
   reevaluation-period-millis: 300000
@@ -35,6 +35,7 @@ configurations-cache:
   expiration-millis: 600000
   refresh-millis: 300000
 
+login-topic: login
 rewards-topic: rewards
 
 progression.sources:

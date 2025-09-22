@@ -18,7 +18,7 @@ public class UserState {
 	private Map<ProgressionType, Long> progressions = new HashMap<>();
 	@Builder.Default
 	private List<Reward> rewards = new ArrayList<>();
-	private Long version;
+	private long version;
 
 	public ProgressionConfiguration getProgressionConfiguration(ProgressionType type) {
 		return configuration.progressionsConfiguration().get(type);

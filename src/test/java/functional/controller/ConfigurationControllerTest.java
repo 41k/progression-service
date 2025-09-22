@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import functional.FunctionalTest;
 import io.restassured.http.ContentType;
 
+// todo: rename to ConfigurationFlowTest and move to functional.flow package
 public class ConfigurationControllerTest extends FunctionalTest {
 
 	private static final String CONFIGURATIONS_URL = "/progression-service/admin/v1/configurations";

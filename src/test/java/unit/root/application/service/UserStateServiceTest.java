@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static unit.TestData.CONFIGURATION;
@@ -14,9 +15,13 @@ import static unit.TestData.CONFIGURATION_ID;
 import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
 import static unit.TestData.PROGRESSIONS_CONFIGURATION_2;
 import static unit.TestData.SEGMENTS;
+import static unit.TestData.SEGMENT_1;
 import static unit.TestData.SEGMENT_2;
+import static unit.TestData.USER_CONFIGURATION;
 import static unit.TestData.USER_ID;
+import static unit.TestData.USER_PROGRESSIONS;
 import static unit.TestData.USER_STATE;
+import static unit.TestData.USER_STATE_VERSION;
 
 import java.time.Clock;
 import java.util.Map;
@@ -32,6 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.support.RetryTemplate;
 
+import root.application.model.Configuration;
 import root.application.model.ProgressionType;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
@@ -40,6 +46,7 @@ import root.application.service.SegmentationService;
 import root.application.service.UserStatePersistenceService;
 import root.application.service.UserStateService;
 
+// todo: rename all tests to pattern: methodName_[optional]expectedBehavior_[optional]stateOrConditions
 @ExtendWith(MockitoExtension.class)
 public class UserStateServiceTest {
 
@@ -77,9 +84,118 @@ public class UserStateServiceTest {
 	}
 
 	@Test
+	void assignActivateConfigurationToUser_withRetriesForOptimisticLocks() {
+		// given
+		var userState = UserState.builder()
+				.userId(USER_ID)
+				.configuration(UserConfiguration.builder().id(5).build())
+				.progressions(USER_PROGRESSIONS)
+				.version(USER_STATE_VERSION)
+				.build();
+		var userStateWithNewConfiguration = UserState.builder()
+				.userId(USER_ID)
+				.configuration(USER_CONFIGURATION)
+				.version(USER_STATE_VERSION)
+				.build();
+
+		// and
+		when(configurationService.getActiveConfiguration()).thenReturn(CONFIGURATION);
+		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(userState));
+		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(SEGMENT_1);
+		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
+		when(userStatePersistenceService.save(userStateWithNewConfiguration))
+				.thenThrow(OptimisticLockingFailureException.class)
+				.thenThrow(OptimisticLockingFailureException.class)
+				.thenReturn(userStateWithNewConfiguration);
+
+		// when
+		userStateService.assignActivateConfigurationToUser(USER_ID);
+
+		// then
+		verify(configurationService, times(3)).getActiveConfiguration();
+		verify(userStatePersistenceService, times(3)).find(USER_ID);
+		verify(segmentationService, times(3)).evaluate(USER_ID, SEGMENTS);
+		verify(clock, times(3)).millis();
+		verify(userStatePersistenceService, times(3)).save(userStateWithNewConfiguration);
+	}
+
+	@Test
+	void assignActivateConfigurationToUser_shouldCreateUserStateWithActiveConfiguration_ifUserStateIsNotFound() {
+		// given
+		when(configurationService.getActiveConfiguration()).thenReturn(CONFIGURATION);
+		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.empty());
+		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(SEGMENT_1);
+		when(clock.millis()).thenReturn(CONFIGURATION_UPDATE_TIMESTAMP);
+
+		// and
+		var userState = UserState.builder().userId(USER_ID).configuration(USER_CONFIGURATION).build();
+
+		// when
+		userStateService.assignActivateConfigurationToUser(USER_ID);
+
+		// then
+		verify(configurationService).getActiveConfiguration();
+		verify(userStatePersistenceService).find(USER_ID);
+		verify(segmentationService).evaluate(USER_ID, SEGMENTS);
+		verify(clock).millis();
+		verify(userStatePersistenceService).save(userState);
+	}
+
+	@Test
+	void assignActivateConfigurationToUser_shouldNotDoNothing_ifThereIsNoActiveConfiguration() {
+		// given
+		when(configurationService.getActiveConfiguration()).thenReturn(null);
+
+		// when
+		userStateService.assignActivateConfigurationToUser(USER_ID);
+
+		// then
+		verify(configurationService).getActiveConfiguration();
+		verifyNoMoreInteractions(configurationService, userStatePersistenceService, segmentationService, clock);
+	}
+
+	@Test
+	void assignActivateConfigurationToUser_shouldNotDoNothing_ifUserAlreadyHasThisConfiguration() {
+		// given
+		when(configurationService.getActiveConfiguration()).thenReturn(CONFIGURATION);
+		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
+
+		// when
+		userStateService.assignActivateConfigurationToUser(USER_ID);
+
+		// then
+		verify(configurationService).getActiveConfiguration();
+		verify(userStatePersistenceService).find(USER_ID);
+		verifyNoMoreInteractions(configurationService, userStatePersistenceService, segmentationService, clock);
+	}
+
+	@Test
+	void assignActivateConfigurationToUser_shouldNotDoNothing_ifConfigurationIsNotApplicableForUser() {
+		// given
+		var userState = UserState.builder()
+				.userId(USER_ID)
+				.configuration(UserConfiguration.builder().id(3).build())
+				.build();
+
+		// and
+		when(configurationService.getActiveConfiguration()).thenReturn(CONFIGURATION);
+		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(userState));
+		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(null);
+
+		// when
+		userStateService.assignActivateConfigurationToUser(USER_ID);
+
+		// then
+		verify(configurationService).getActiveConfiguration();
+		verify(userStatePersistenceService).find(USER_ID);
+		verify(segmentationService).evaluate(USER_ID, SEGMENTS);
+		verifyNoMoreInteractions(clock, userStatePersistenceService);
+	}
+
+	@Test
 	void shouldFindActiveUserSate() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 
 		var userState = userStateService.findActiveUserState(USER_ID);
 
@@ -98,7 +214,7 @@ public class UserStateServiceTest {
 	@Test
 	void shouldThrowException_ifUserStateIsNotActive() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
 
 		assertThatThrownBy(() -> userStateService.findActiveUserState(USER_ID))
 				.isInstanceOf(NoSuchElementException.class)
@@ -115,7 +231,7 @@ public class UserStateServiceTest {
 
 		// and
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 		when(segmentationService.shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP)).thenReturn(true);
 		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(SEGMENT_2);
 		when(clock.millis()).thenReturn(UPDATE_TIMESTAMP);
@@ -129,7 +245,7 @@ public class UserStateServiceTest {
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
-		verify(configurationService).getCachedActiveConfigurationById(CONFIGURATION_ID);
+		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
 		verify(segmentationService).evaluate(USER_ID, SEGMENTS);
 		verify(clock).millis();
@@ -140,7 +256,7 @@ public class UserStateServiceTest {
 	void shouldUpdateUserState_withoutLatestConfigurationUpdatesSync() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 		when(segmentationService.shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP)).thenReturn(false);
 		when(userStatePersistenceService.save(UPDATED_USER_STATE)).thenReturn(UPDATED_USER_STATE);
 
@@ -152,7 +268,7 @@ public class UserStateServiceTest {
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
-		verify(configurationService).getCachedActiveConfigurationById(CONFIGURATION_ID);
+		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
 		verify(segmentationService, never()).evaluate(any(), any());
 		verify(clock, never()).millis();
@@ -163,7 +279,7 @@ public class UserStateServiceTest {
 	void shouldNotReturnUpdatedUserState_ifConfigurationNoLongerApplicableForUser() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 		when(segmentationService.shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP)).thenReturn(true);
 		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(null);
 
@@ -175,7 +291,7 @@ public class UserStateServiceTest {
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
-		verify(configurationService).getCachedActiveConfigurationById(CONFIGURATION_ID);
+		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
 		verify(segmentationService).evaluate(USER_ID, SEGMENTS);
 		verify(clock, never()).millis();
@@ -186,7 +302,7 @@ public class UserStateServiceTest {
 	void shouldNotReturnUpdatedUserState_ifConfigurationNoLongerExist() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
 
 		// when
 		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
@@ -196,7 +312,7 @@ public class UserStateServiceTest {
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
-		verify(configurationService).getCachedActiveConfigurationById(CONFIGURATION_ID);
+		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService, never()).shouldReevaluateSegmentation(anyLong());
 		verify(segmentationService, never()).evaluate(any(), any());
 		verify(clock, never()).millis();
@@ -207,7 +323,7 @@ public class UserStateServiceTest {
 	void shouldUpdateUserState_withRetriesForOptimisticLocks() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
+		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 		when(segmentationService.shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP)).thenReturn(false);
 		when(userStatePersistenceService.save(UPDATED_USER_STATE))
 				.thenThrow(OptimisticLockingFailureException.class)
@@ -222,29 +338,7 @@ public class UserStateServiceTest {
 
 		// and
 		verify(userStatePersistenceService, times(3)).find(USER_ID);
-		verify(configurationService, times(3)).getCachedActiveConfigurationById(CONFIGURATION_ID);
-		verify(segmentationService, times(3)).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
-		verify(userStatePersistenceService, times(3)).save(UPDATED_USER_STATE);
-	}
-
-	@Test
-	void shouldThrowException_ifRetriesForOptimisticLocksAreExhausted() {
-		// given
-		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
-		when(configurationService.getCachedActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
-		when(segmentationService.shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP)).thenReturn(false);
-		when(userStatePersistenceService.save(UPDATED_USER_STATE))
-				.thenThrow(OptimisticLockingFailureException.class)
-				.thenThrow(OptimisticLockingFailureException.class)
-				.thenThrow(OptimisticLockingFailureException.class);
-
-		// expect
-		assertThatThrownBy(() -> userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION))
-				.isInstanceOf(OptimisticLockingFailureException.class);
-
-		// and
-		verify(userStatePersistenceService, times(3)).find(USER_ID);
-		verify(configurationService, times(3)).getCachedActiveConfigurationById(CONFIGURATION_ID);
+		verify(configurationService, times(3)).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService, times(3)).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
 		verify(userStatePersistenceService, times(3)).save(UPDATED_USER_STATE);
 	}
