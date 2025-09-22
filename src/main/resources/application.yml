@@ -35,6 +35,7 @@ configurations-cache:
   expiration-millis: 600000
   refresh-millis: 300000
 
+login-topic: login
 rewards-topic: rewards
 
 progression.sources:

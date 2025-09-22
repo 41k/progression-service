@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import root.application.service.ConfigurationService;
 import root.infrastructure.dto.AllConfigurationsResponse;
 import root.infrastructure.dto.ConfigurationRequest;
 import root.infrastructure.dto.ConfigurationResponse;
+import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 
 @RestController
 @RequestMapping(path = "/${spring.application.name}/admin/v1/configurations", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -26,7 +26,7 @@ import root.infrastructure.dto.ConfigurationResponse;
 @RequiredArgsConstructor
 public class ConfigurationController {
 
-	private final ConfigurationService configurationService;
+	private final ConfigurationPersistenceService configurationService;
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
