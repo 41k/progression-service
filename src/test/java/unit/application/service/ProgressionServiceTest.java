@@ -1,11 +1,11 @@
-package unit.root.application.service;
+package unit.application.service;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static unit.TestData.EVENT;
-import static unit.TestData.USER_ID;
-import static unit.TestData.USER_STATE;
+import static unit.UnitTestData.EVENT;
+import static unit.UnitTestData.USER_ID;
+import static unit.UnitTestData.USER_STATE;
 
 import java.util.LinkedHashSet;
 import java.util.List;

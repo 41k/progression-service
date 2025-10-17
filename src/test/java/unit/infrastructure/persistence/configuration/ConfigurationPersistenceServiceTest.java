@@ -1,4 +1,4 @@
-package unit.root.infrastructure.persistence.configuration;
+package unit.infrastructure.persistence.configuration;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_ENTITY;
-import static unit.TestData.CONFIGURATION_ID;
-import static unit.TestData.CONFIGURATION_REQUEST;
-import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
+import static unit.UnitTestData.CONFIGURATION;
+import static unit.UnitTestData.CONFIGURATION_ENTITY;
+import static unit.UnitTestData.CONFIGURATION_ID;
+import static unit.UnitTestData.CONFIGURATION_REQUEST;
+import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
 
 import java.time.Clock;
 import java.util.List;

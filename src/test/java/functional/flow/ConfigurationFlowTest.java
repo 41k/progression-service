@@ -1,11 +1,12 @@
-package functional.controller;
+package functional.flow;
 
 import static functional.FunctionalTestData.ALL_CONFIGURATIONS_RESPONSE_BODY;
+import static functional.FunctionalTestData.CONFIGURATION_ENTITY;
+import static functional.FunctionalTestData.CONFIGURATION_ENTITY_BEFORE_UPDATE;
 import static functional.FunctionalTestData.CONFIGURATION_REQUEST_BODY;
 import static functional.FunctionalTestData.CONFIGURATION_RESPONSE_BODY;
 import static functional.FunctionalTestData.INVALID_CONFIGURATION_REQUEST_BODY;
 import static functional.FunctionalTestData.configurationEntity;
-import static functional.FunctionalTestData.configurationEntityBeforeUpdate;
 import static functional.FunctionalTestUtils.jsonMatch;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
@@ -23,8 +24,7 @@ import org.junit.jupiter.api.Test;
 import functional.FunctionalTest;
 import io.restassured.http.ContentType;
 
-// todo: rename to ConfigurationFlowTest and move to functional.flow package
-public class ConfigurationControllerTest extends FunctionalTest {
+public class ConfigurationFlowTest extends FunctionalTest {
 
 	private static final String CONFIGURATIONS_URL = "/progression-service/admin/v1/configurations";
 	private static final String CONFIGURATION_URI = CONFIGURATIONS_URL + "/%d";
@@ -42,7 +42,7 @@ public class ConfigurationControllerTest extends FunctionalTest {
 				.extract().body().as(Long.class);
 
 		// then
-		var createdConfiguration = configurationRepository.findById(configurationId).get();
+		var createdConfiguration = configurationRepository.findById(configurationId).orElseThrow();
 		var expectedCreatedConfiguration = configurationEntity(configurationId);
 		assertThat(createdConfiguration).isEqualTo(expectedCreatedConfiguration);
 	}
@@ -63,7 +63,7 @@ public class ConfigurationControllerTest extends FunctionalTest {
 				.extract().body().asString();
 
 		// then
-		assertThat(response).contains(
+		assertThat(response).contains( // todo: refactor to approach with @ParameterizedTest
 				"Validation failure",
 				"with 9 errors",
 				"Field error in object 'configurationRequest' on field 'startTimestamp': rejected value [0]",
@@ -84,20 +84,19 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	@Test
 	void shouldUpdateConfiguration() {
 		// given
-		var configurationId = configurationRepository.save(configurationEntityBeforeUpdate()).getId();
-		var configurationUri = CONFIGURATION_URI.formatted(configurationId);
+		var configurationId = configurationRepository.save(CONFIGURATION_ENTITY_BEFORE_UPDATE).getId();
 
 		// when
 		given().body(CONFIGURATION_REQUEST_BODY)
 				.contentType(ContentType.JSON)
 				.when()
-				.put(configurationUri)
+				.put(CONFIGURATION_URI.formatted(configurationId))
 				.then()
 				.statusCode(NO_CONTENT.value())
 				.log().all();
 
 		// then
-		var updatedConfiguration = configurationRepository.findById(configurationId).get();
+		var updatedConfiguration = configurationRepository.findById(configurationId).orElseThrow();
 		var expectedUpdatedConfiguration = configurationEntity(configurationId);
 		assertThat(updatedConfiguration).isEqualTo(expectedUpdatedConfiguration);
 	}
@@ -105,22 +104,21 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	@Test
 	void shouldNotUpdateConfiguration_ifRequestIsInvalid() {
 		// given
-		var configurationEntityBeforeUpdate = configurationRepository.save(configurationEntityBeforeUpdate());
+		var configurationEntityBeforeUpdate = configurationRepository.save(CONFIGURATION_ENTITY_BEFORE_UPDATE);
 		var configurationId = configurationEntityBeforeUpdate.getId();
-		var configurationUri = CONFIGURATION_URI.formatted(configurationId);
 
 		// when
 		var response = given().body(INVALID_CONFIGURATION_REQUEST_BODY)
 				.contentType(ContentType.JSON)
 				.when()
-				.put(configurationUri)
+				.put(CONFIGURATION_URI.formatted(configurationId))
 				.then()
 				.statusCode(BAD_REQUEST.value())
 				.log().all()
 				.extract().body().asString();
 
 		// then
-		assertThat(response).contains(
+		assertThat(response).contains( // todo: refactor to approach with @ParameterizedTest
 				"Validation failure",
 				"with 9 errors",
 				"Field error in object 'configurationRequest' on field 'startTimestamp': rejected value [0]",
@@ -135,7 +133,7 @@ public class ConfigurationControllerTest extends FunctionalTest {
 		);
 
 		// and
-		var configuration = configurationRepository.findById(configurationId).get();
+		var configuration = configurationRepository.findById(configurationId).orElseThrow();
 		assertThat(configuration).isEqualTo(configurationEntityBeforeUpdate);
 	}
 
@@ -143,8 +141,8 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	void shouldReturnAllConfigurations() {
 		// given
 		configurationRepository.saveAllAndFlush(List.of(
-				configurationEntityBeforeUpdate(),
-				configurationEntity()
+				CONFIGURATION_ENTITY_BEFORE_UPDATE,
+				CONFIGURATION_ENTITY
 		));
 
 		// when
@@ -153,6 +151,7 @@ public class ConfigurationControllerTest extends FunctionalTest {
 				.then()
 				.statusCode(OK.value())
 				.log().all()
+				// todo: replace with .body(jsonMatcher(...)); here and in all other places
 				.extract().body().asString();
 
 		// then
@@ -162,12 +161,11 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	@Test
 	void shouldReturnConfiguration() {
 		// given
-		var configurationId = configurationRepository.saveAndFlush(configurationEntity()).getId();
-		var configurationUri = CONFIGURATION_URI.formatted(configurationId);
+		var configurationId = configurationRepository.saveAndFlush(CONFIGURATION_ENTITY).getId();
 
 		// when
 		var response = when()
-				.get(configurationUri)
+				.get(CONFIGURATION_URI.formatted(configurationId))
 				.then()
 				.statusCode(OK.value())
 				.log().all()
@@ -181,12 +179,11 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	void shouldNotReturnConfiguration_ifItIsNotFound() {
 		// given
 		var configurationId = 1;
-		var configurationUri = CONFIGURATION_URI.formatted(configurationId);
 		var expectedResponse = "Resource is not found: Configuration is not found by id=" + configurationId;
 
 		// when
 		var response = when()
-				.get(configurationUri)
+				.get(CONFIGURATION_URI.formatted(configurationId))
 				.then()
 				.statusCode(NOT_FOUND.value())
 				.log().all()
@@ -199,15 +196,14 @@ public class ConfigurationControllerTest extends FunctionalTest {
 	@Test
 	void shouldDeleteConfiguration() {
 		// given
-		var configurationId = configurationRepository.save(configurationEntity()).getId();
-		var configurationUri = CONFIGURATION_URI.formatted(configurationId);
+		var configurationId = configurationRepository.save(CONFIGURATION_ENTITY).getId();
 
 		// and
 		assertThat(configurationRepository.count()).isEqualTo(1);
 
 		// when
 		when()
-				.delete(configurationUri)
+				.delete(CONFIGURATION_URI.formatted(configurationId))
 				.then()
 				.statusCode(NO_CONTENT.value())
 				.log().all();

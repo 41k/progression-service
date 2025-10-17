@@ -1,12 +1,12 @@
-package unit.root.infrastructure.rewards;
+package unit.infrastructure.rewards;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static unit.TestData.REWARD_1;
-import static unit.TestData.REWARD_2;
-import static unit.TestData.USER_ID;
+import static unit.UnitTestData.REWARD_1;
+import static unit.UnitTestData.REWARD_2;
+import static unit.UnitTestData.USER_ID;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

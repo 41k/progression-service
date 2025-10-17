@@ -1,8 +1,8 @@
 package functional.flow;
 
+import static functional.FunctionalTestData.CONFIGURATION_ENTITY;
 import static functional.FunctionalTestData.LOGIN_EVENT;
 import static functional.FunctionalTestData.SEGMENT_1;
-import static functional.FunctionalTestData.configurationEntity;
 import static functional.FunctionalTestData.userStateWithInactiveConfiguration;
 import static functional.FunctionalTestData.userStateWithNewActiveConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,7 +20,7 @@ public class ActiveConfigurationAssignmentFlowTest extends FunctionalTest {
 	@Test
 	void shouldAssignActivateConfigurationToUser() {
 		// given
-		configurationRepository.saveAndFlush(configurationEntity());
+		configurationRepository.saveAndFlush(CONFIGURATION_ENTITY);
 		userStateRepository.save(userStateWithInactiveConfiguration(0));
 
 		// and
@@ -39,7 +39,7 @@ public class ActiveConfigurationAssignmentFlowTest extends FunctionalTest {
 		assertThat(userStateRepository.findAll()).isEmpty();
 
 		// and
-		configurationRepository.saveAndFlush(configurationEntity());
+		configurationRepository.saveAndFlush(CONFIGURATION_ENTITY);
 
 		// and
 		mockCallToSegmentationService(SEGMENT_1);
@@ -66,7 +66,7 @@ public class ActiveConfigurationAssignmentFlowTest extends FunctionalTest {
 	@Test
 	void shouldSkipLoginEvent_ifUserAlreadyHasThisConfiguration() {
 		// given
-		configurationRepository.saveAndFlush(configurationEntity());
+		configurationRepository.saveAndFlush(CONFIGURATION_ENTITY);
 		userStateRepository.save(userStateWithNewActiveConfiguration(0));
 
 		// when
@@ -79,7 +79,7 @@ public class ActiveConfigurationAssignmentFlowTest extends FunctionalTest {
 	@Test
 	void shouldNotAssignActivateConfigurationToUser_ifItIsNotApplicableAccordingToSegmentation() {
 		// given
-		configurationRepository.saveAndFlush(configurationEntity());
+		configurationRepository.saveAndFlush(CONFIGURATION_ENTITY);
 		userStateRepository.save(userStateWithInactiveConfiguration(0));
 
 		// and

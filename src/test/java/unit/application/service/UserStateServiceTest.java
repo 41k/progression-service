@@ -1,4 +1,4 @@
-package unit.root.application.service;
+package unit.application.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -10,18 +10,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
-import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_ID;
-import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
-import static unit.TestData.PROGRESSIONS_CONFIGURATION_2;
-import static unit.TestData.SEGMENTS;
-import static unit.TestData.SEGMENT_1;
-import static unit.TestData.SEGMENT_2;
-import static unit.TestData.USER_CONFIGURATION;
-import static unit.TestData.USER_ID;
-import static unit.TestData.USER_PROGRESSIONS;
-import static unit.TestData.USER_STATE;
-import static unit.TestData.USER_STATE_VERSION;
+import static unit.UnitTestData.CONFIGURATION;
+import static unit.UnitTestData.CONFIGURATION_ID;
+import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
+import static unit.UnitTestData.PROGRESSIONS_CONFIGURATION_2;
+import static unit.UnitTestData.SEGMENTS;
+import static unit.UnitTestData.SEGMENT_1;
+import static unit.UnitTestData.SEGMENT_2;
+import static unit.UnitTestData.USER_CONFIGURATION;
+import static unit.UnitTestData.USER_ID;
+import static unit.UnitTestData.USER_PROGRESSIONS;
+import static unit.UnitTestData.USER_STATE;
+import static unit.UnitTestData.USER_STATE_VERSION;
 
 import java.time.Clock;
 import java.util.Map;
@@ -37,7 +37,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.support.RetryTemplate;
 
-import root.application.model.Configuration;
 import root.application.model.ProgressionType;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
@@ -238,7 +237,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(expectedUpdatedUserState)).thenReturn(expectedUpdatedUserState);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(expectedUpdatedUserState);
@@ -261,7 +260,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(UPDATED_USER_STATE)).thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);
@@ -331,7 +330,7 @@ public class UserStateServiceTest {
 				.thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);

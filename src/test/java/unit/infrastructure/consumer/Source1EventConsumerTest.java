@@ -1,4 +1,4 @@
-package unit.root.infrastructure.consumer;
+package unit.infrastructure.consumer;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;

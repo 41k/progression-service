@@ -1,10 +1,10 @@
-package unit.root.infrastructure.persistence.state;
+package unit.infrastructure.persistence.state;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static unit.TestData.USER_ID;
-import static unit.TestData.USER_STATE;
-import static unit.TestData.USER_STATE_DOCUMENT;
+import static unit.UnitTestData.USER_ID;
+import static unit.UnitTestData.USER_STATE;
+import static unit.UnitTestData.USER_STATE_DOCUMENT;
 
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ public class UserStateAerospikePersistenceServiceTest {
 	void shouldFindUserSateById() {
 		when(repository.findById(USER_ID)).thenReturn(Optional.of(USER_STATE_DOCUMENT));
 
-		var userState = persistenceService.find(USER_ID).get();
+		var userState = persistenceService.find(USER_ID).orElseThrow();
 
 		assertThat(userState).isEqualTo(USER_STATE);
 	}

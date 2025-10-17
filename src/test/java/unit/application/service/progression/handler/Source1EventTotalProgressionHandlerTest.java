@@ -1,13 +1,13 @@
-package unit.root.application.service.progression.handler;
+package unit.application.service.progression.handler;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
-import static unit.TestData.REWARD_1;
-import static unit.TestData.REWARD_2;
-import static unit.TestData.USER_CONFIGURATION;
+import static unit.UnitTestData.REWARD_1;
+import static unit.UnitTestData.REWARD_2;
+import static unit.UnitTestData.USER_CONFIGURATION;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,11 +24,11 @@ import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 import root.application.model.event.Event;
 import root.application.model.event.Source1Event;
-import root.application.service.progression.handler.Source1EventWonProgressionHandler;
+import root.application.service.progression.handler.Source1EventTotalProgressionHandler;
 
-public class Source1EventWonProgressionHandlerTest {
+public class Source1EventTotalProgressionHandlerTest {
 
-	private static final Source1EventWonProgressionHandler HANDLER = new Source1EventWonProgressionHandler();
+	private static final Source1EventTotalProgressionHandler HANDLER = new Source1EventTotalProgressionHandler();
 
 	@ParameterizedTest
 	@MethodSource("eligibilityCheckParams")
@@ -43,14 +43,14 @@ public class Source1EventWonProgressionHandlerTest {
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
-					put(SOURCE_1_TOTAL, 7L);
-					put(SOURCE_1_WON, 3L);
+					put(SOURCE_1_TOTAL, 5L);
+					put(SOURCE_1_WON, 2L);
 				}})
 				.build();
 		var expectedUserStateAfterEventHandling = userState.toBuilder()
 				.progressions(Map.of(
-						SOURCE_1_TOTAL, 7L,
-						SOURCE_1_WON, 4L
+						SOURCE_1_TOTAL, 6L,
+						SOURCE_1_WON, 2L
 				))
 				.build();
 
@@ -68,8 +68,8 @@ public class Source1EventWonProgressionHandlerTest {
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
-					put(SOURCE_1_TOTAL, 6L);
-					put(SOURCE_1_WON, 4L);
+					put(SOURCE_1_TOTAL, 9L);
+					put(SOURCE_1_WON, 7L);
 				}})
 				.rewards(new ArrayList<>() {{
 					add(REWARD_2);
@@ -77,8 +77,8 @@ public class Source1EventWonProgressionHandlerTest {
 				.build();
 		var expectedUserStateAfterEventHandling = userState.toBuilder()
 				.progressions(Map.of(
-						SOURCE_1_TOTAL, 6L,
-						SOURCE_1_WON, 0L
+						SOURCE_1_TOTAL, 0L,
+						SOURCE_1_WON, 7L
 				))
 				.rewards(List.of(REWARD_2, REWARD_1))
 				.build();
@@ -114,9 +114,7 @@ public class Source1EventWonProgressionHandlerTest {
 	private static Stream<Arguments> eligibilityCheckParams() {
 		return Stream.of(
 				Arguments.of(Source1Event.builder().userId(null).build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result(null).build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result("WIN").build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result("WON").build(), TRUE)
+				Arguments.of(Source1Event.builder().userId(1L).build(), TRUE)
 		);
 	}
 }

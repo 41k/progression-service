@@ -1,10 +1,10 @@
-package unit.root.infrastructure.consumer;
+package unit.infrastructure.consumer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static unit.TestData.USER_ID;
+import static unit.UnitTestData.USER_ID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

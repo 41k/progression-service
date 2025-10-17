@@ -15,6 +15,9 @@ import root.infrastructure.persistence.state.UserStateDocument;
 @UtilityClass
 public class FunctionalTestData {
 
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final String LINES_SEPARATOR = "\n";
+
 	public static final String USER_ID = "1000";
 	public static final String SEGMENT_1 = "segment-1";
 	public static final String SEGMENT_2 = "segment-2";
@@ -31,54 +34,41 @@ public class FunctionalTestData {
 	public static final String SEGMENTATION_RESPONSE_BODY = getFileContent("http/response/segmentation-response-body.json");
 	public static final String SEGMENTATION_EMPTY_RESPONSE_BODY = "{}";
 	public static final String LOGIN_EVENT = getFileContent("kafka/login-event.json");
-	private static final String CONFIGURATION_ENTITY = getFileContent("db/configuration/configuration-entity.json");
-	private static final String CONFIGURATION_ENTITY_BEFORE_UPDATE = getFileContent("db/configuration/configuration-entity-before-update.json");
-	private static final String USER_STATE = getFileContent("db/state/user-state.json");
-	private static final String USER_STATE_WITH_INACTIVE_CONFIGURATION = getFileContent("db/state/user-state-with-inactive-configuration.json");
-	private static final String USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION = getFileContent("db/state/user-state-with-new-active-configuration.json");
+	public static final ConfigurationEntity CONFIGURATION_ENTITY = deserialize("db/configuration/configuration-entity.json", ConfigurationEntity.class);
+	public static final ConfigurationEntity CONFIGURATION_ENTITY_BEFORE_UPDATE = deserialize("db/configuration/configuration-entity-before-update.json", ConfigurationEntity.class);
+	private static final UserStateDocument USER_STATE = deserialize("db/state/user-state.json", UserStateDocument.class);
+	private static final UserStateDocument USER_STATE_WITH_INACTIVE_CONFIGURATION = deserialize("db/state/user-state-with-inactive-configuration.json", UserStateDocument.class);
+	private static final UserStateDocument USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION = deserialize("db/state/user-state-with-new-active-configuration.json", UserStateDocument.class);
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-	@SneakyThrows
 	public static ConfigurationEntity configurationEntity(Long configurationId) {
-		return configurationEntity().toBuilder().id(configurationId).build();
-	}
-
-	@SneakyThrows
-	public static ConfigurationEntity configurationEntity() {
-		return OBJECT_MAPPER.readValue(CONFIGURATION_ENTITY, ConfigurationEntity.class);
-	}
-
-	@SneakyThrows
-	public static ConfigurationEntity configurationEntityBeforeUpdate() {
-		return OBJECT_MAPPER.readValue(CONFIGURATION_ENTITY_BEFORE_UPDATE, ConfigurationEntity.class);
+		return CONFIGURATION_ENTITY.toBuilder().id(configurationId).build();
 	}
 
 	public static UserStateDocument userState(long version) {
-		return userState(USER_STATE, version);
+		return USER_STATE.toBuilder().version(version).build();
 	}
 
 	public static UserStateDocument userStateWithInactiveConfiguration(long version) {
-		return userState(USER_STATE_WITH_INACTIVE_CONFIGURATION, version);
+		return USER_STATE_WITH_INACTIVE_CONFIGURATION.toBuilder().version(version).build();
 	}
 
 	public static UserStateDocument userStateWithNewActiveConfiguration(long version) {
-		return userState(USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION, version);
-	}
-
-	@SneakyThrows
-	private static UserStateDocument userState(String userState, long version) {
-		var userStateDocument = OBJECT_MAPPER.readValue(userState, UserStateDocument.class);
-		return userStateDocument.toBuilder().version(version).build();
+		return USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION.toBuilder().version(version).build();
 	}
 
 	@SneakyThrows
 	private static String getFileContent(String filePath) {
 		var path = Paths.get(FunctionalTestData.class.getClassLoader().getResource(filePath).toURI());
 		try (var lines = Files.lines(path)) {
-			return lines.collect(Collectors.joining("\n"));
+			return lines.collect(Collectors.joining(LINES_SEPARATOR));
 		} catch (Exception e) {
 			throw new IOException("Failed to load file: %s".formatted(filePath), e);
 		}
+	}
+
+	@SneakyThrows
+	private static <T> T deserialize(String filePath, Class<T> type) {
+		String fileContent = getFileContent(filePath);
+		return OBJECT_MAPPER.readValue(fileContent, type);
 	}
 }

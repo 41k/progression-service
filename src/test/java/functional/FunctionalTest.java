@@ -107,7 +107,7 @@ public abstract class FunctionalTest {
 	}
 
 	protected void assertUserState(UserStateDocument expectedUserState) {
-		var userState = userStateRepository.findById(USER_ID).get();
+		var userState = userStateRepository.findById(USER_ID).orElseThrow();
 		assertThat(userState).isEqualTo(expectedUserState);
 	}
 }

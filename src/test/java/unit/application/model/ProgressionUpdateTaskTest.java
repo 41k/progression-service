@@ -1,9 +1,9 @@
-package unit.root.application.model;
+package unit.application.model;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static unit.TestData.EVENT;
-import static unit.TestData.USER_STATE;
+import static unit.UnitTestData.EVENT;
+import static unit.UnitTestData.USER_STATE;
 
 import java.util.List;
 import java.util.Map;

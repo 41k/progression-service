@@ -1,8 +1,8 @@
-package unit.root.infrastructure.persistence.configuration;
+package unit.infrastructure.persistence.configuration;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static unit.TestData.CONFIGURATION_ENTITY;
+import static unit.UnitTestData.CONFIGURATION_ENTITY;
 
 import java.time.Clock;
 import java.util.List;
