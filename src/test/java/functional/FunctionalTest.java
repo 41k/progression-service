@@ -10,6 +10,7 @@ import static functional.FunctionalTestData.SEGMENTATION_REQUEST_BODY;
 import static functional.FunctionalTestData.SEGMENTATION_RESPONSE_BODY;
 import static functional.FunctionalTestData.SEGMENTATION_URL;
 import static functional.FunctionalTestData.USER_ID;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.awaitility.Durations.ONE_SECOND;
@@ -20,10 +21,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.Map;
 
+import net.javacrumbs.jsonunit.core.Option;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.assertj.core.matcher.AssertionMatcher;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ThrowingRunnable;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -107,7 +112,17 @@ public abstract class FunctionalTest {
 	}
 
 	protected void assertUserState(UserStateDocument expectedUserState) {
-		var userState = userStateRepository.findById(USER_ID).get();
+		var userState = userStateRepository.findById(USER_ID).orElseThrow();
 		assertThat(userState).isEqualTo(expectedUserState);
+	}
+
+	protected Matcher<String> equalsToJson(String expectedJson) {
+		return new AssertionMatcher<>() {
+			public void assertion(String actualJson) {
+				assertThatJson(actualJson)
+						.when(Option.IGNORING_ARRAY_ORDER)
+						.isEqualTo(expectedJson);
+			}
+		};
 	}
 }

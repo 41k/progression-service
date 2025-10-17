@@ -1,4 +1,4 @@
-package unit.root.application.service;
+package unit.application.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -10,18 +10,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
-import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_ID;
-import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
-import static unit.TestData.PROGRESSIONS_CONFIGURATION_2;
-import static unit.TestData.SEGMENTS;
-import static unit.TestData.SEGMENT_1;
-import static unit.TestData.SEGMENT_2;
-import static unit.TestData.USER_CONFIGURATION;
-import static unit.TestData.USER_ID;
-import static unit.TestData.USER_PROGRESSIONS;
-import static unit.TestData.USER_STATE;
-import static unit.TestData.USER_STATE_VERSION;
+import static unit.UnitTestData.CONFIGURATION;
+import static unit.UnitTestData.CONFIGURATION_ID;
+import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
+import static unit.UnitTestData.PROGRESSIONS_CONFIGURATION_2;
+import static unit.UnitTestData.SEGMENTS;
+import static unit.UnitTestData.SEGMENT_1;
+import static unit.UnitTestData.SEGMENT_2;
+import static unit.UnitTestData.USER_CONFIGURATION;
+import static unit.UnitTestData.USER_ID;
+import static unit.UnitTestData.USER_PROGRESSIONS;
+import static unit.UnitTestData.USER_STATE;
+import static unit.UnitTestData.USER_STATE_VERSION;
 
 import java.time.Clock;
 import java.util.Map;
@@ -29,15 +29,15 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.retry.support.RetryTemplate;
 
-import root.application.model.Configuration;
 import root.application.model.ProgressionType;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
@@ -46,15 +46,9 @@ import root.application.service.SegmentationService;
 import root.application.service.UserStatePersistenceService;
 import root.application.service.UserStateService;
 
-// todo: rename all tests to pattern: methodName_[optional]expectedBehavior_[optional]stateOrConditions
 @ExtendWith(MockitoExtension.class)
 public class UserStateServiceTest {
 
-	private static final RetryTemplate OPTIMISTIC_LOCK_RETRY_TEMPLATE = RetryTemplate.builder()
-			.retryOn(OptimisticLockingFailureException.class)
-			.maxAttempts(3)
-			.fixedBackoff(200)
-			.build();
 	private static final Map<ProgressionType, Long> UPDATED_PROGRESSION = Map.of(SOURCE_1_TOTAL, 7L);
 	private static final Function<UserState, UserState> USER_STATE_UPDATE_FUNCTION =
 			userState -> userState.toBuilder().progressions(UPDATED_PROGRESSION).build();
@@ -66,6 +60,12 @@ public class UserStateServiceTest {
 			.build();
 	private static final UserState UPDATED_USER_STATE = USER_STATE.toBuilder().progressions(UPDATED_PROGRESSION).build();
 
+	@Spy
+	private RetryTemplate optimisticLockRetryTemplate = RetryTemplate.builder()
+			.retryOn(OptimisticLockingFailureException.class)
+			.maxAttempts(3)
+			.fixedBackoff(200)
+			.build();
 	@Mock
 	private UserStatePersistenceService userStatePersistenceService;
 	@Mock
@@ -74,14 +74,8 @@ public class UserStateServiceTest {
 	private SegmentationService segmentationService;
 	@Mock
 	private Clock clock;
+	@InjectMocks
 	private UserStateService userStateService;
-
-	@BeforeEach
-	void setUp() {
-		userStateService = new UserStateService(
-				OPTIMISTIC_LOCK_RETRY_TEMPLATE, userStatePersistenceService,
-				configurationService, segmentationService, clock);
-	}
 
 	@Test
 	void assignActivateConfigurationToUser_withRetriesForOptimisticLocks() {
@@ -193,7 +187,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldFindActiveUserSate() {
+	void findActiveUserState() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
 
@@ -203,7 +197,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldThrowException_ifUserStateIsNotFound() {
+	void findActiveUserState_shouldThrowException_ifUserStateIsNotFound() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> userStateService.findActiveUserState(USER_ID))
@@ -212,7 +206,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldThrowException_ifUserStateIsNotActive() {
+	void findActiveUserState_shouldThrowException_ifUserStateIsNotActive() {
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
 
@@ -222,7 +216,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldUpdateUserState_withLatestConfigurationUpdatesSync() {
+	void updateUserStateIfPresent_shouldUpdateUserState_withLatestConfigurationUpdatesSync() {
 		// given
 		var expectedUpdatedUserState = USER_STATE.toBuilder()
 				.configuration(UPDATED_USER_CONFIGURATION)
@@ -238,7 +232,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(expectedUpdatedUserState)).thenReturn(expectedUpdatedUserState);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(expectedUpdatedUserState);
@@ -253,7 +247,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldUpdateUserState_withoutLatestConfigurationUpdatesSync() {
+	void updateUserStateIfPresent_shouldUpdateUserState_withoutLatestConfigurationUpdatesSync() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
@@ -261,7 +255,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(UPDATED_USER_STATE)).thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);
@@ -276,7 +270,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldNotReturnUpdatedUserState_ifConfigurationNoLongerApplicableForUser() {
+	void updateUserStateIfPresent_shouldNotReturnUpdatedUserState_ifConfigurationNoLongerApplicableForUser() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
@@ -299,7 +293,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldNotReturnUpdatedUserState_ifConfigurationNoLongerExist() {
+	void updateUserStateIfPresent_shouldNotReturnUpdatedUserState_ifConfigurationNoLongerExist() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
@@ -320,7 +314,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void shouldUpdateUserState_withRetriesForOptimisticLocks() {
+	void updateUserStateIfPresent_shouldUpdateUserState_withRetriesForOptimisticLocks() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
@@ -331,7 +325,7 @@ public class UserStateServiceTest {
 				.thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).get();
+		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
 
 		// then
 		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);

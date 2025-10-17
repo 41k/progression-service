@@ -1,11 +1,11 @@
-package functional.controller;
+package functional.flow;
 
 import static functional.FunctionalTestData.USER_ID;
 import static functional.FunctionalTestData.USER_STATE_RESPONSE_BODY;
 import static functional.FunctionalTestData.configurationEntity;
 import static functional.FunctionalTestData.userState;
-import static functional.FunctionalTestUtils.jsonMatch;
 import static io.restassured.RestAssured.given;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import functional.FunctionalTest;
 
-// todo: rename to UserStateRetrievalFlowTest and move to functional.flow package
-public class MeControllerTest extends FunctionalTest {
+public class UserStateRetrievalFlowTest extends FunctionalTest {
 
 	private static final String ME_URI = "/progression-service/public/v1/me";
 	private static final String USER_STATE_NOT_FOUND_RESPONSE = "Resource is not found: Active user state is not found by id=" + USER_ID;
@@ -38,7 +37,7 @@ public class MeControllerTest extends FunctionalTest {
 				.extract().body().asString();
 
 		// then
-		assertThat(jsonMatch(response, USER_STATE_RESPONSE_BODY)).isTrue();
+		assertThatJson(response).isEqualTo(USER_STATE_RESPONSE_BODY);
 	}
 
 	@Test

@@ -1,4 +1,4 @@
-package unit.root.infrastructure.persistence.configuration;
+package unit.infrastructure.persistence.configuration;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -6,11 +6,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static unit.TestData.CONFIGURATION;
-import static unit.TestData.CONFIGURATION_ENTITY;
-import static unit.TestData.CONFIGURATION_ID;
-import static unit.TestData.CONFIGURATION_REQUEST;
-import static unit.TestData.CONFIGURATION_UPDATE_TIMESTAMP;
+import static unit.UnitTestData.CONFIGURATION;
+import static unit.UnitTestData.CONFIGURATION_ENTITY;
+import static unit.UnitTestData.CONFIGURATION_ID;
+import static unit.UnitTestData.CONFIGURATION_REQUEST;
+import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
 
 import java.time.Clock;
 import java.util.List;
@@ -73,7 +73,7 @@ public class ConfigurationPersistenceServiceTest {
 	private ConfigurationPersistenceService configurationPersistenceService;
 
 	@Test
-	void shouldCreateConfiguration() {
+	void createConfiguration() {
 		// given
 		var configurationEntityToSave = CONFIGURATION_ENTITY.toBuilder().id(null).build();
 
@@ -89,7 +89,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnConfigurationById() {
+	void getConfigurationById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.of(CONFIGURATION_ENTITY));
 
 		var configuration = configurationPersistenceService.getConfigurationById(CONFIGURATION_ID);
@@ -98,7 +98,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldThrowException_ifConfigurationIsNotFoundById() {
+	void getConfigurationById_shouldThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> configurationPersistenceService.getConfigurationById(CONFIGURATION_ID))
@@ -107,7 +107,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnAllConfigurations() {
+	void getConfigurations() {
 		when(repository.findAll()).thenReturn(List.of(CONFIGURATION_ENTITY, CONFIGURATION_ENTITY));
 
 		var configurations = configurationPersistenceService.getConfigurations();
@@ -116,7 +116,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldUpdateConfiguration() {
+	void updateConfiguration() {
 		// given
 		var existingConfiguration = ConfigurationEntity.builder().id(CONFIGURATION_ID).updateTimestamp(10L).build();
 
@@ -132,7 +132,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
+	void updateConfiguration_shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> configurationPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))
@@ -141,14 +141,14 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldDeleteConfiguration() {
+	void deleteConfiguration() {
 		configurationPersistenceService.deleteConfiguration(CONFIGURATION_ID);
 
 		verify(repository).deleteById(CONFIGURATION_ID);
 	}
 
 	@Test
-	void shouldReturnCachedActiveConfigurationById() {
+	void getActiveConfigurationById_shouldReturnCachedActiveConfigurationById() {
 		// given
 		var expectedConfiguration = CONFIGURATION.toBuilder()
 				.id(3L)
@@ -168,7 +168,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnNull_ifCachedActiveConfigurationIsNotFoundById() {
+	void getActiveConfigurationById_shouldReturnNull_ifCachedActiveConfigurationIsNotFoundById() {
 		// given
 		mockCache();
 
@@ -180,7 +180,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnNull_ifConfigurationIsFoundByIdButIsNotActive() {
+	void getActiveConfigurationById_shouldReturnNull_ifConfigurationIsFoundByIdButIsNotActive() {
 		// given
 		mockCache();
 		when(clock.millis()).thenReturn(700L);
@@ -193,7 +193,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnCachedActiveConfiguration() {
+	void getActiveConfiguration_shouldReturnCachedActiveConfiguration() {
 		// given
 		var expectedConfiguration = CONFIGURATION.toBuilder()
 				.id(2L)
@@ -213,7 +213,7 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void shouldReturnNull_ifThereIsNoActiveConfiguration() {
+	void getActiveConfiguration_shouldReturnNull_ifThereIsNoActiveConfiguration() {
 		// given
 		mockCache();
 		when(clock.millis()).thenReturn(700L);

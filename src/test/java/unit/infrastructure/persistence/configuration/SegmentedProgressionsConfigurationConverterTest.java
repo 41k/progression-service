@@ -1,7 +1,7 @@
-package unit.root.infrastructure.persistence.configuration;
+package unit.infrastructure.persistence.configuration;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static unit.TestData.SEGMENTED_PROGRESSIONS_CONFIGURATION;
+import static unit.UnitTestData.SEGMENTED_PROGRESSIONS_CONFIGURATION;
 
 import org.junit.jupiter.api.Test;
 

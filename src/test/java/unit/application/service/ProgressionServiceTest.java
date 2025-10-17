@@ -1,11 +1,11 @@
-package unit.root.application.service;
+package unit.application.service;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static unit.TestData.EVENT;
-import static unit.TestData.USER_ID;
-import static unit.TestData.USER_STATE;
+import static unit.UnitTestData.EVENT;
+import static unit.UnitTestData.USER_ID;
+import static unit.UnitTestData.USER_STATE;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -61,7 +61,7 @@ public class ProgressionServiceTest {
 	}
 
 	@Test
-	void shouldProcessEventSuccessfully() {
+	void process_shouldProcessEventSuccessfully() {
 		// given
 		when(progressionHandler1.isEligible(EVENT)).thenReturn(true);
 		when(progressionHandler2.isEligible(EVENT)).thenReturn(true);
@@ -78,7 +78,7 @@ public class ProgressionServiceTest {
 	}
 
 	@Test
-	void shouldSkipEventProcessing_ifUserStateIsNotFound() {
+	void process_shouldSkipEventProcessing_ifUserStateIsNotFound() {
 		// given
 		when(progressionHandler1.isEligible(EVENT)).thenReturn(true);
 		when(progressionHandler2.isEligible(EVENT)).thenReturn(true);
@@ -95,7 +95,7 @@ public class ProgressionServiceTest {
 	}
 
 	@Test
-	void shouldSkipEventProcessing_ifThereAreNoEligibleProgressionHandlers() {
+	void process_shouldSkipEventProcessing_ifThereAreNoEligibleProgressionHandlers() {
 		// given
 		when(progressionHandler1.isEligible(EVENT)).thenReturn(false);
 		when(progressionHandler2.isEligible(EVENT)).thenReturn(false);
@@ -110,7 +110,7 @@ public class ProgressionServiceTest {
 	}
 
 	@Test
-	void shouldSwallowExceptionAndSkipEventProcessing() {
+	void process_shouldSwallowExceptionAndSkipEventProcessing() {
 		// given
 		when(progressionHandler1.isEligible(EVENT)).thenThrow(new RuntimeException());
 

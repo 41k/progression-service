@@ -1,9 +1,9 @@
-package unit.root.application.model;
+package unit.application.model;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static unit.TestData.EVENT;
-import static unit.TestData.USER_STATE;
+import static unit.UnitTestData.EVENT;
+import static unit.UnitTestData.USER_STATE;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class ProgressionUpdateTaskTest {
 	}
 
 	@Test
-	void shouldUpdateProgressionSuccessfully() {
+	void apply_shouldUpdateProgressionSuccessfully() {
 		// given
 		var userStateAfterUpdateByProgressionHandler1 = USER_STATE.toBuilder().progressions(Map.of(
 				ProgressionType.SOURCE_1_TOTAL, 1L
@@ -53,7 +53,7 @@ public class ProgressionUpdateTaskTest {
 	}
 
 	@Test
-	void shouldSwallowExceptionThrownByAnyProgressionHandlerAndProceed() {
+	void apply_shouldSwallowExceptionThrownByAnyProgressionHandlerAndProceed() {
 		// given
 		var userStateAfterUpdateByProgressionHandler2 = USER_STATE.toBuilder().progressions(Map.of(
 				ProgressionType.SOURCE_1_WON, 1L

@@ -1,4 +1,4 @@
-package unit.root.infrastructure.consumer;
+package unit.infrastructure.consumer;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -21,7 +21,7 @@ public class Source1EventConsumerTest {
 	private Source1EventConsumer consumer;
 
 	@Test
-	void shouldConsumeEvent() {
+	void consume() {
 		var event = new Source1Event();
 
 		consumer.consume(event);

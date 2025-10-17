@@ -1,12 +1,11 @@
-package unit.root.infrastructure.rewards;
+package unit.infrastructure.rewards;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static unit.TestData.REWARD_1;
-import static unit.TestData.REWARD_2;
-import static unit.TestData.USER_ID;
+import static unit.UnitTestData.REWARD_1;
+import static unit.UnitTestData.REWARD_2;
+import static unit.UnitTestData.USER_ID;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -39,7 +38,7 @@ public class AsyncRewardServiceTest {
 	}
 
 	@Test
-	void shouldSendRewards() {
+	void sendRewards() {
 		// given
 		var userStateWithRewards = UserState.builder().userId(USER_ID).rewards(REWARDS).build();
 		var message = new RewardsMessage(USER_ID, REWARDS);
@@ -53,11 +52,11 @@ public class AsyncRewardServiceTest {
 	}
 
 	@Test
-	void shouldNotSendRewards_ifThereAreNoRewardsToBeSent() {
+	void sendRewards_shouldNotSendRewards_ifThereAreNoRewardsToBeSent() {
 		var userStateWithoutRewards = UserState.builder().build();
 
 		asyncRewardService.sendRewards(userStateWithoutRewards);
 
-		verify(kafkaTemplate, never()).send(any(), any(), any());
+		verifyNoInteractions(kafkaTemplate);
 	}
 }

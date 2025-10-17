@@ -1,13 +1,13 @@
-package unit.root.application.service.progression.handler;
+package unit.application.service.progression.handler;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
-import static unit.TestData.REWARD_1;
-import static unit.TestData.REWARD_2;
-import static unit.TestData.USER_CONFIGURATION;
+import static unit.UnitTestData.REWARD_1;
+import static unit.UnitTestData.REWARD_2;
+import static unit.UnitTestData.USER_CONFIGURATION;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class Source1EventTotalProgressionHandlerTest {
 	}
 
 	@Test
-	void shouldHandleEvent_andIncreaseProgression_ifProgressionThresholdIsNotReached() {
+	void handle_shouldIncreaseProgression_ifProgressionThresholdIsNotReached() {
 		// given
 		var event = new Source1Event();
 		var userState = UserState.builder()
@@ -62,7 +62,7 @@ public class Source1EventTotalProgressionHandlerTest {
 	}
 
 	@Test
-	void shouldHandleEvent_andAddReward_andResetProgressionToZero_ifProgressionThresholdIsReached() {
+	void handle_shouldAddReward_andResetProgressionToZero_ifProgressionThresholdIsReached() {
 		// given
 		var event = new Source1Event();
 		var userState = UserState.builder()
@@ -91,7 +91,7 @@ public class Source1EventTotalProgressionHandlerTest {
 	}
 
 	@Test
-	void shouldHandleEvent_andNotIncreaseProgression_ifProgressionConfigurationIsMissed() {
+	void handle_shouldNotIncreaseProgression_ifProgressionConfigurationIsMissed() {
 		// given
 		var event = new Source1Event();
 		var userState = UserState.builder()

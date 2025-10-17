@@ -80,6 +80,7 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 		return cacheLoader.load(cacheName);
 	}
 
+	// todo: use Map Struct here and for other mappings
 	private ConfigurationEntity toEntity(ConfigurationRequest request) {
 		var segmentedProgressionsConfiguration = request.segmentedProgressionsConfiguration().entrySet().stream()
 				.collect(Collectors.toMap(

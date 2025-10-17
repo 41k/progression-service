@@ -35,6 +35,7 @@ public class ConfigurationController {
 		return configurationService.createConfiguration(request);
 	}
 
+	// todo: pagination and filtering
 	@GetMapping
 	public AllConfigurationsResponse getConfigurations() {
 		log.info("Get all configurations");

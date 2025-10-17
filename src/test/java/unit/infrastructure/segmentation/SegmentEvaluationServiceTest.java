@@ -1,12 +1,12 @@
-package unit.root.infrastructure.segmentation;
+package unit.infrastructure.segmentation;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
-import static unit.TestData.SEGMENTS;
-import static unit.TestData.SEGMENT_1;
-import static unit.TestData.USER_ID;
+import static unit.UnitTestData.SEGMENTS;
+import static unit.UnitTestData.SEGMENT_1;
+import static unit.UnitTestData.USER_ID;
 
 import java.time.Clock;
 import java.util.List;
@@ -46,10 +46,10 @@ public class SegmentEvaluationServiceTest {
 
 	@ParameterizedTest
 	@MethodSource("segmentationReevaluationCheckParams")
-	void shouldCheckIfSegmentationReevaluationIsNecessary(Long currentTimestamp,
-	                                                      Long lastEvaluationTimestamp,
-	                                                      Integer reevaluationPeriod,
-	                                                      Boolean expectedResult) {
+	void shouldReevaluateSegmentation_shouldCheckIfSegmentationReevaluationIsNecessary(Long currentTimestamp,
+	                                                                                   Long lastEvaluationTimestamp,
+	                                                                                   Integer reevaluationPeriod,
+	                                                                                   Boolean expectedResult) {
 		// given
 		when(clock.millis()).thenReturn(currentTimestamp);
 		when(segmentationProperties.reevaluationPeriodMillis()).thenReturn(reevaluationPeriod);
@@ -62,7 +62,7 @@ public class SegmentEvaluationServiceTest {
 	}
 
 	@Test
-	void shouldEvaluateSegments() {
+	void evaluate() {
 		// given
 		var url = "segmentation-service-url";
 		var requestHeaders = new HttpHeaders();
