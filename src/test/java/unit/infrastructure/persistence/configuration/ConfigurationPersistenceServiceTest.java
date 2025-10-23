@@ -7,10 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static unit.UnitTestData.CONFIGURATION;
+import static unit.UnitTestData.CONFIGURATION_END_TIMESTAMP;
 import static unit.UnitTestData.CONFIGURATION_ENTITY;
 import static unit.UnitTestData.CONFIGURATION_ID;
 import static unit.UnitTestData.CONFIGURATION_REQUEST;
+import static unit.UnitTestData.CONFIGURATION_START_TIMESTAMP;
 import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
+import static unit.UnitTestData.SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO;
 
 import java.time.Clock;
 import java.util.List;
@@ -23,50 +26,58 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 
 import lombok.SneakyThrows;
+import root.application.model.Configuration;
 import root.configuration.properties.ConfigurationsCacheProperties;
-import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
+import root.infrastructure.ConfigurationMapperImpl;
+import root.infrastructure.dto.ConfigurationInfoDto;
+import root.infrastructure.dto.ConfigurationResponse;
+import root.infrastructure.dto.ConfigurationsResponse;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
+import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class ConfigurationPersistenceServiceTest {
 
 	private static final String CACHE_NAME = "configurations-cache";
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_1 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_1 = CONFIGURATION.toBuilder()
 			.id(1L)
 			.startTimestamp(100L)
 			.endTimestamp(200L)
 			.build();
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_2 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_2 = CONFIGURATION.toBuilder()
 			.id(2L)
 			.startTimestamp(300L)
 			.endTimestamp(400L)
 			.build();
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_3 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_3 = CONFIGURATION.toBuilder()
 			.id(3L)
 			.startTimestamp(500L)
 			.endTimestamp(600L)
 			.build();
-	private static final Map<Long, ConfigurationEntity> CACHED_CONFIGURATIONS = Map.of(
-			CONFIGURATION_ENTITY_1.getId(), CONFIGURATION_ENTITY_1,
-			CONFIGURATION_ENTITY_2.getId(), CONFIGURATION_ENTITY_2,
-			CONFIGURATION_ENTITY_3.getId(), CONFIGURATION_ENTITY_3
+	private static final Map<Long, Configuration> CACHED_CONFIGURATIONS = Map.of(
+			CONFIGURATION_1.id(), CONFIGURATION_1,
+			CONFIGURATION_2.id(), CONFIGURATION_2,
+			CONFIGURATION_3.id(), CONFIGURATION_3
 	);
 
 	@Mock
 	private ConfigurationsCacheProperties cacheProperties;
 	@Mock
-	private Cache<String, Map<Long, ConfigurationEntity>> cache;
+	private Cache<String, Map<Long, Configuration>> cache;
 	@Mock
-	private CacheLoader<String, Map<Long, ConfigurationEntity>> cacheLoader;
+	private CacheLoader<String, Map<Long, Configuration>> cacheLoader;
 	@Mock
 	private ConfigurationRepository repository;
+	@Spy
+	private ConfigurationMapperImpl mapper;
 	@Mock
 	private Clock clock;
 	@InjectMocks
@@ -90,11 +101,23 @@ public class ConfigurationPersistenceServiceTest {
 
 	@Test
 	void getConfigurationById() {
+		// given
+		var expectedConfigurationResponse = ConfigurationResponse.builder()
+				.id(CONFIGURATION_ID)
+				.startTimestamp(CONFIGURATION_START_TIMESTAMP)
+				.endTimestamp(CONFIGURATION_END_TIMESTAMP)
+				.updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP)
+				.segmentedProgressionsConfiguration(SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO)
+				.build();
+
+		// and
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.of(CONFIGURATION_ENTITY));
 
-		var configuration = configurationPersistenceService.getConfigurationById(CONFIGURATION_ID);
+		// when
+		var configurationResponse = configurationPersistenceService.getConfigurationById(CONFIGURATION_ID);
 
-		assertThat(configuration).isEqualTo(CONFIGURATION);
+		// then
+		assertThat(configurationResponse).isEqualTo(expectedConfigurationResponse);
 	}
 
 	@Test
@@ -108,11 +131,24 @@ public class ConfigurationPersistenceServiceTest {
 
 	@Test
 	void getConfigurations() {
-		when(repository.findAll()).thenReturn(List.of(CONFIGURATION_ENTITY, CONFIGURATION_ENTITY));
+		// given
+		var configurationEntities = List.of(
+				CONFIGURATION_ENTITY.toBuilder().id(1L).startTimestamp(100L).endTimestamp(200L).build(),
+				CONFIGURATION_ENTITY.toBuilder().id(2L).startTimestamp(300L).endTimestamp(400L).build()
+		);
+		var expectedConfigurationsResponse = new ConfigurationsResponse(List.of(
+				ConfigurationInfoDto.builder().id(1L).startTimestamp(100L).endTimestamp(200L).updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP).build(),
+				ConfigurationInfoDto.builder().id(2L).startTimestamp(300L).endTimestamp(400L).updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP).build()
+		));
 
-		var configurations = configurationPersistenceService.getConfigurations();
+		// and
+		when(repository.findAll()).thenReturn(configurationEntities);
 
-		assertThat(configurations).isEqualTo(List.of(CONFIGURATION, CONFIGURATION));
+		// when
+		var configurationsResponse = configurationPersistenceService.getConfigurations();
+
+		// then
+		assertThat(configurationsResponse).isEqualTo(expectedConfigurationsResponse);
 	}
 
 	@Test
@@ -231,7 +267,7 @@ public class ConfigurationPersistenceServiceTest {
 		when(cacheLoader.load(CACHE_NAME)).thenReturn(CACHED_CONFIGURATIONS);
 		when(cache.get(eq(CACHE_NAME), any()))
 				.then(invocation -> {
-					Function<String, Map<Long, ConfigurationEntity>> cacheLoaderFunction = invocation.getArgument(1);
+					Function<String, Map<Long, Configuration>> cacheLoaderFunction = invocation.getArgument(1);
 					return cacheLoaderFunction.apply(CACHE_NAME);
 				});
 	}

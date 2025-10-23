@@ -9,13 +9,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import root.application.model.Configuration;
 import root.application.model.ProgressionConfiguration;
 import root.application.model.ProgressionType;
 
@@ -35,18 +33,8 @@ public class ConfigurationEntity {
 	private Long endTimestamp;
 	@NotNull
 	private Long updateTimestamp;
-	@Valid
-	@Convert(converter = SegmentedProgressionsConfigurationConverter.class)
+	@NotNull
 	@Column(columnDefinition = "MEDIUMBLOB")
+	@Convert(converter = SegmentedProgressionsConfigurationConverter.class)
 	private Map<String, Map<ProgressionType, ProgressionConfiguration>> segmentedProgressionsConfiguration;
-
-	public Configuration toModel() {
-		return Configuration.builder()
-				.id(id)
-				.startTimestamp(startTimestamp)
-				.endTimestamp(endTimestamp)
-				.updateTimestamp(updateTimestamp)
-				.segmentedProgressionsConfiguration(segmentedProgressionsConfiguration)
-				.build();
-	}
 }

@@ -1,11 +1,9 @@
 package root.infrastructure.persistence.configuration;
 
 import java.time.Clock;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -18,37 +16,49 @@ import lombok.SneakyThrows;
 import root.application.model.Configuration;
 import root.application.service.ConfigurationService;
 import root.configuration.properties.ConfigurationsCacheProperties;
+import root.infrastructure.ConfigurationMapper;
 import root.infrastructure.dto.ConfigurationRequest;
+import root.infrastructure.dto.ConfigurationResponse;
+import root.infrastructure.dto.ConfigurationsResponse;
 
 @Service
 @RequiredArgsConstructor
 public class ConfigurationPersistenceService implements ConfigurationService {
 
 	private final ConfigurationsCacheProperties cacheProperties;
-	private final Cache<String, Map<Long, ConfigurationEntity>> cache;
-	private final CacheLoader<String, Map<Long, ConfigurationEntity>> cacheLoader;
+	private final Cache<String, Map<Long, Configuration>> cache;
+	private final CacheLoader<String, Map<Long, Configuration>> cacheLoader;
 	private final ConfigurationRepository repository;
+	private final ConfigurationMapper mapper;
 	private final Clock clock;
 
 	// todo: validate that time range does not intersect with other configurations
 	public Long createConfiguration(ConfigurationRequest request) {
-		var configuration = toEntity(request);
+		var configuration = mapper.toEntity(request)
+				.toBuilder()
+				.updateTimestamp(clock.millis())
+				.build();
 		return repository.save(configuration).getId();
 	}
 
-	public List<Configuration> getConfigurations() {
-		return repository.findAll().stream().map(ConfigurationEntity::toModel).toList();
+	public ConfigurationsResponse getConfigurations() {
+		var configurations = repository.findAll().stream().map(mapper::toDto).toList();
+		return new ConfigurationsResponse(configurations);
 	}
 
-	public Configuration getConfigurationById(Long id) {
-		return findById(id).toModel();
+	public ConfigurationResponse getConfigurationById(Long id) {
+		return mapper.toResponse(findById(id));
 	}
 
 	// todo: validate that time range does not intersect with other configurations
 	@Transactional
 	public void updateConfiguration(Long id, ConfigurationRequest request) {
 		var existingConfiguration = findById(id);
-		var updatedConfiguration = toEntity(request).toBuilder().id(existingConfiguration.getId()).build();
+		var updatedConfiguration = mapper.toEntity(request)
+				.toBuilder()
+				.id(existingConfiguration.getId())
+				.updateTimestamp(clock.millis())
+				.build();
 		repository.save(updatedConfiguration);
 	}
 
@@ -60,7 +70,6 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 	public Configuration getActiveConfiguration() {
 		return cache.get(cacheProperties.name(), this::loadCache).values()
 				.stream()
-				.map(ConfigurationEntity::toModel)
 				.filter(configuration -> configuration.isActive(clock.millis()))
 				.findFirst()
 				.orElse(null);
@@ -70,31 +79,13 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 	public Configuration getActiveConfigurationById(long configurationId) {
 		var configurations = cache.get(cacheProperties.name(), this::loadCache);
 		return Optional.ofNullable(configurations.get(configurationId))
-				.map(ConfigurationEntity::toModel)
 				.filter(configuration -> configuration.isActive(clock.millis()))
 				.orElse(null);
 	}
 
 	@SneakyThrows
-	private Map<Long, ConfigurationEntity> loadCache(String cacheName) {
+	private Map<Long, Configuration> loadCache(String cacheName) {
 		return cacheLoader.load(cacheName);
-	}
-
-	// todo: use Map Struct here and for other mappings
-	private ConfigurationEntity toEntity(ConfigurationRequest request) {
-		var segmentedProgressionsConfiguration = request.segmentedProgressionsConfiguration().entrySet().stream()
-				.collect(Collectors.toMap(
-						Map.Entry::getKey,
-						e1 -> e1.getValue().entrySet().stream().collect(Collectors.toMap(
-								Map.Entry::getKey,
-								e2 -> e2.getValue().toModel()
-						))));
-		return ConfigurationEntity.builder()
-				.startTimestamp(request.startTimestamp())
-				.endTimestamp(request.endTimestamp())
-				.updateTimestamp(clock.millis())
-				.segmentedProgressionsConfiguration(segmentedProgressionsConfiguration)
-				.build();
 	}
 
 	private ConfigurationEntity findById(Long id) {

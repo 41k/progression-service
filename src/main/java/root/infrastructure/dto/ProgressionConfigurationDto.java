@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
-import root.application.model.ProgressionConfiguration;
 
 @Builder(toBuilder = true)
 public record ProgressionConfigurationDto(
@@ -13,14 +12,4 @@ public record ProgressionConfigurationDto(
 		@NotNull @Valid
 		RewardDto reward
 ) {
-	public static ProgressionConfigurationDto fromModel(ProgressionConfiguration configuration) {
-		return new ProgressionConfigurationDto(
-				configuration.progressionTarget(),
-				RewardDto.fromModel(configuration.reward())
-		);
-	}
-
-	public ProgressionConfiguration toModel() {
-		return new ProgressionConfiguration(progressionTarget, reward.toModel());
-	}
 }

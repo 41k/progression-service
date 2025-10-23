@@ -41,7 +41,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import io.restassured.RestAssured;
 import lombok.SneakyThrows;
 import root.ApplicationRunner;
-import root.infrastructure.persistence.configuration.ConfigurationEntity;
+import root.application.model.Configuration;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
 import root.infrastructure.persistence.state.UserStateDocument;
 import root.infrastructure.persistence.state.UserStateRepository;
@@ -57,7 +57,7 @@ public abstract class FunctionalTest {
 	protected int serverPort;
 
 	@Autowired
-	protected Cache<String, Map<Long, ConfigurationEntity>> cache;
+	protected Cache<String, Map<Long, Configuration>> cache;
 
 	@Autowired
 	protected ConfigurationRepository configurationRepository;
