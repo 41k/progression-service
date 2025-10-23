@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.aerospike.repository.config.EnableAerospikeRepositories;
 import org.springframework.retry.support.RetryTemplate;
@@ -18,14 +17,14 @@ import org.springframework.web.client.RestTemplate;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
+import root.application.model.Configuration;
 import root.configuration.properties.ConfigurationsCacheProperties;
 import root.configuration.properties.ProgressionProperties;
 import root.configuration.properties.SegmentationProperties;
-import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationsCacheLoader;
 import root.infrastructure.persistence.state.UserStateRepository;
 
-@Configuration
+@org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties({
 		SegmentationProperties.class,
 		ConfigurationsCacheProperties.class,
@@ -63,7 +62,7 @@ public class ApplicationConfiguration {
 	}
 
 	@Bean
-	public Cache<String, Map<Long, ConfigurationEntity>> configurationsCache(
+	public Cache<String, Map<Long, Configuration>> configurationsCache(
 			ConfigurationsCacheProperties cacheProperties,
 			ConfigurationsCacheLoader cacheLoader
 	) {

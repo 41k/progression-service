@@ -8,6 +8,7 @@ public record ConfigurationInfoDto(
 		long endTimestamp,
 		long updateTimestamp
 ) {
+	// todo: replace by MapStruct
 	public ConfigurationInfoDto(Configuration configuration) {
 		this(
 				configuration.id(),

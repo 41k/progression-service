@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import root.infrastructure.dto.AllConfigurationsResponse;
 import root.infrastructure.dto.ConfigurationRequest;
 import root.infrastructure.dto.ConfigurationResponse;
+import root.infrastructure.dto.ConfigurationsResponse;
 import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 
 @RestController
@@ -37,15 +37,15 @@ public class ConfigurationController {
 
 	// todo: pagination and filtering
 	@GetMapping
-	public AllConfigurationsResponse getConfigurations() {
+	public ConfigurationsResponse getConfigurations() {
 		log.info("Get all configurations");
-		return new AllConfigurationsResponse(configurationService.getConfigurations());
+		return configurationService.getConfigurations();
 	}
 
 	@GetMapping("/{id}")
 	public ConfigurationResponse getConfiguration(@PathVariable Long id) {
 		log.info("Get configuration with id={}", id);
-		return new ConfigurationResponse(configurationService.getConfigurationById(id));
+		return configurationService.getConfigurationById(id);
 	}
 
 	@PutMapping("/{id}")

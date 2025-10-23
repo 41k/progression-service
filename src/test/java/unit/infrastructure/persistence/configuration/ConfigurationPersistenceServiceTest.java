@@ -23,50 +23,55 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 
 import lombok.SneakyThrows;
+import root.application.model.Configuration;
 import root.configuration.properties.ConfigurationsCacheProperties;
-import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
+import root.infrastructure.ConfigurationMapper;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
+import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class ConfigurationPersistenceServiceTest {
 
 	private static final String CACHE_NAME = "configurations-cache";
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_1 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_1 = CONFIGURATION.toBuilder()
 			.id(1L)
 			.startTimestamp(100L)
 			.endTimestamp(200L)
 			.build();
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_2 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_2 = CONFIGURATION.toBuilder()
 			.id(2L)
 			.startTimestamp(300L)
 			.endTimestamp(400L)
 			.build();
-	private static final ConfigurationEntity CONFIGURATION_ENTITY_3 = CONFIGURATION_ENTITY.toBuilder()
+	private static final Configuration CONFIGURATION_3 = CONFIGURATION.toBuilder()
 			.id(3L)
 			.startTimestamp(500L)
 			.endTimestamp(600L)
 			.build();
-	private static final Map<Long, ConfigurationEntity> CACHED_CONFIGURATIONS = Map.of(
-			CONFIGURATION_ENTITY_1.getId(), CONFIGURATION_ENTITY_1,
-			CONFIGURATION_ENTITY_2.getId(), CONFIGURATION_ENTITY_2,
-			CONFIGURATION_ENTITY_3.getId(), CONFIGURATION_ENTITY_3
+	private static final Map<Long, Configuration> CACHED_CONFIGURATIONS = Map.of(
+			CONFIGURATION_1.id(), CONFIGURATION_1,
+			CONFIGURATION_2.id(), CONFIGURATION_2,
+			CONFIGURATION_3.id(), CONFIGURATION_3
 	);
 
 	@Mock
 	private ConfigurationsCacheProperties cacheProperties;
 	@Mock
-	private Cache<String, Map<Long, ConfigurationEntity>> cache;
+	private Cache<String, Map<Long, Configuration>> cache;
 	@Mock
-	private CacheLoader<String, Map<Long, ConfigurationEntity>> cacheLoader;
+	private CacheLoader<String, Map<Long, Configuration>> cacheLoader;
 	@Mock
 	private ConfigurationRepository repository;
+	@Spy
+	private ConfigurationMapper mapper;
 	@Mock
 	private Clock clock;
 	@InjectMocks

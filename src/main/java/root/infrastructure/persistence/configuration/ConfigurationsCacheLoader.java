@@ -10,18 +10,22 @@ import org.springframework.stereotype.Component;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 
 import lombok.RequiredArgsConstructor;
+import root.application.model.Configuration;
+import root.infrastructure.ConfigurationMapper;
 
 @Component
 @RequiredArgsConstructor
-public class ConfigurationsCacheLoader implements CacheLoader<String, Map<Long, ConfigurationEntity>> {
+public class ConfigurationsCacheLoader implements CacheLoader<String, Map<Long, Configuration>> {
 
 	private final ConfigurationRepository repository;
 	private final Clock clock;
+	private final ConfigurationMapper mapper;
 
 	@Override
-	public Map<Long, ConfigurationEntity> load(String key) {
+	public Map<Long, Configuration> load(String key) {
 		return repository.getActiveAndPendingConfigurations(clock.millis())
 				.stream()
-				.collect(Collectors.toMap(ConfigurationEntity::getId, Function.identity()));
+				.map(mapper::toModel)
+				.collect(Collectors.toMap(Configuration::id, Function.identity()));
 	}
 }
