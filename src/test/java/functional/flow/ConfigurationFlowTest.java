@@ -57,9 +57,11 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		assertThat(createdConfiguration).isEqualTo(expectedCreatedConfiguration);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("invalidConfigurationRequests")
-	void shouldNotCreateConfiguration_ifRequestIsInvalid(ConfigurationRequest invalidRequest, String... validationFailureReasons) {
+	void shouldNotCreateConfiguration_ifRequestIsInvalid(String testCaseName,
+	                                                     ConfigurationRequest invalidRequest,
+	                                                     String... validationFailureReasons) {
 		// given
 		assertThat(configurationRepository.findAll().isEmpty()).isTrue();
 
@@ -83,6 +85,26 @@ public class ConfigurationFlowTest extends FunctionalTest {
 	}
 
 	@Test
+	void shouldNotCreateConfiguration_ifTimeRangeIntersectsWithOtherExistingConfigurations() {
+		// given
+		configurationRepository.save(configurationEntity());
+
+		// when
+		var response = given()
+				.body(CONFIGURATION_REQUEST_BODY)
+				.contentType(ContentType.JSON)
+				.when()
+				.post(CONFIGURATIONS_URL)
+				.then()
+				.statusCode(BAD_REQUEST.value())
+				.log().all()
+				.extract().body().asString();
+
+		// then
+		assertThat(response).isEqualTo("Validation failure: Configuration time range intersects with another existing configuration");
+	}
+
+	@Test
 	void shouldUpdateConfiguration() {
 		// given
 		var configurationId = configurationRepository.save(configurationEntityBeforeUpdate()).getId();
@@ -103,9 +125,11 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		assertThat(updatedConfiguration).isEqualTo(expectedUpdatedConfiguration);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("invalidConfigurationRequests")
-	void shouldNotUpdateConfiguration_ifRequestIsInvalid(ConfigurationRequest invalidRequest, String... validationFailureReasons) {
+	void shouldNotUpdateConfiguration_ifRequestIsInvalid(String testCaseName,
+	                                                     ConfigurationRequest invalidRequest,
+	                                                     String... validationFailureReasons) {
 		// given
 		var configurationEntityBeforeUpdate = configurationRepository.save(configurationEntityBeforeUpdate());
 		var configurationId = configurationEntityBeforeUpdate.getId();
@@ -128,6 +152,26 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		// and
 		var configuration = configurationRepository.findById(configurationId).orElseThrow();
 		assertThat(configuration).isEqualTo(configurationEntityBeforeUpdate);
+	}
+
+	@Test
+	void shouldNotUpdateConfiguration_ifTimeRangeIntersectsWithOtherExistingConfigurations() {
+		// given
+		configurationRepository.save(configurationEntity());
+
+		// when
+		var response = given()
+				.body(CONFIGURATION_REQUEST_BODY)
+				.contentType(ContentType.JSON)
+				.when()
+				.put(CONFIGURATION_URI.formatted(100))
+				.then()
+				.statusCode(BAD_REQUEST.value())
+				.log().all()
+				.extract().body().asString();
+
+		// then
+		assertThat(response).isEqualTo("Validation failure: Configuration time range intersects with another existing configuration");
 	}
 
 	@Test
@@ -165,7 +209,6 @@ public class ConfigurationFlowTest extends FunctionalTest {
 	void shouldNotReturnConfiguration_ifItIsNotFound() {
 		// given
 		var configurationId = 1;
-		var expectedResponse = "Resource is not found: Configuration is not found by id=" + configurationId;
 
 		// when
 		var response = when()
@@ -176,7 +219,7 @@ public class ConfigurationFlowTest extends FunctionalTest {
 				.extract().body().asString();
 
 		// then
-		assertThat(response).isEqualTo(expectedResponse);
+		assertThat(response).isEqualTo("Resource is not found: Configuration is not found by id=" + configurationId);
 	}
 
 	@Test
@@ -205,43 +248,54 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		var progressionConfiguration = CONFIGURATION_REQUEST_BODY.segmentedProgressionsConfiguration().get(SEGMENT_1).get(SOURCE_1_WON);
 		return Stream.of(
 				Arguments.of(
+						"startTimestamp is not positive",
 						CONFIGURATION_REQUEST_BODY.toBuilder().startTimestamp(-1).build(),
 						new String[] {"on field 'startTimestamp': rejected value [-1]", "must be greater than 0"}
 				),
 				Arguments.of(
+						"endTimestamp is not positive",
 						CONFIGURATION_REQUEST_BODY.toBuilder().endTimestamp(-1).build(),
 						new String[] {"on field 'endTimestamp': rejected value [-1]", "must be greater than 0"}
 				),
 				Arguments.of(
+						"segmentedProgressionsConfiguration is null",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(null).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration': rejected value [null]", "must not be empty"}
 				),
 				Arguments.of(
+						"segmentedProgressionsConfiguration is empty map",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of()).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration': rejected value [{}]", "must not be empty"}
 				),
 				Arguments.of(
+						"progressionConfigurationPerType is empty map",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of())).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1]': rejected value [{}]", "must not be empty"}
 				),
 				Arguments.of(
+						"progressionConfiguration is null",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, noProgressionConfigurationPerType)).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON]': rejected value [null]", "must not be null"}
 				),
 				Arguments.of(
+						"progressionTarget is less than 1",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().progressionTarget(0).build()))).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].progressionTarget': rejected value [0]", "must be greater than or equal to 1"}
 				),
 				Arguments.of(
+						"reward is null",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().reward(null).build()))).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward': rejected value [null]", "must not be null"}
 				),
 				Arguments.of(
-						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().reward(new RewardDto(0, 0)).build()))).build(),
-						new String[] {
-								"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward.unitId': rejected value [0]", "must be greater than 0",
-								"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward.amount': rejected value [0]", "must be greater than 0"
-						}
+						"reward.unitId is not positive",
+						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().reward(new RewardDto(0, 1)).build()))).build(),
+						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward.unitId': rejected value [0]", "must be greater than 0"}
+				),
+				Arguments.of(
+						"reward.amount is not positive",
+						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().reward(new RewardDto(1, 0)).build()))).build(),
+						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward.amount': rejected value [0]", "must be greater than 0"}
 				)
 		);
 	}

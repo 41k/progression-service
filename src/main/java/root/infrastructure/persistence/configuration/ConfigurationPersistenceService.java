@@ -32,8 +32,9 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 	private final ConfigurationMapper mapper;
 	private final Clock clock;
 
-	// todo: validate that time range does not intersect with other configurations
+	@Transactional
 	public Long createConfiguration(ConfigurationRequest request) {
+		validateTimeRange(request);
 		var configuration = mapper.toEntity(request)
 				.toBuilder()
 				.updateTimestamp(clock.millis())
@@ -50,9 +51,9 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 		return mapper.toResponse(findById(id));
 	}
 
-	// todo: validate that time range does not intersect with other configurations
 	@Transactional
 	public void updateConfiguration(Long id, ConfigurationRequest request) {
+		validateTimeRange(id, request);
 		var existingConfiguration = findById(id);
 		var updatedConfiguration = mapper.toEntity(request)
 				.toBuilder()
@@ -91,5 +92,19 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 	private ConfigurationEntity findById(Long id) {
 		return repository.findById(id)
 				.orElseThrow(() -> new NoSuchElementException("Configuration is not found by id=" + id));
+	}
+
+	private void validateTimeRange(ConfigurationRequest request) {
+		validateTimeRange(null, request);
+	}
+
+	private void validateTimeRange(Long id, ConfigurationRequest request) {
+		var hasIntersectionWithOtherConfigurations =
+				repository.getConfigurationsWithTimeRangeIntersection(request.startTimestamp(), request.endTimestamp())
+						.stream()
+						.anyMatch(configuration -> !configuration.getId().equals(id));
+		if (hasIntersectionWithOtherConfigurations) {
+			throw new IllegalArgumentException("Configuration time range intersects with another existing configuration");
+		}
 	}
 }

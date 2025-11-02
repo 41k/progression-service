@@ -100,6 +100,15 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
+	void createConfiguration_shouldThrowException_ifTimeRangeIntersectsWithOtherConfigurations() {
+		when(repository.getConfigurationsWithTimeRangeIntersection(CONFIGURATION_START_TIMESTAMP, CONFIGURATION_END_TIMESTAMP)).thenReturn(List.of(CONFIGURATION_ENTITY));
+
+		assertThatThrownBy(() -> configurationPersistenceService.createConfiguration(CONFIGURATION_REQUEST))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Configuration time range intersects with another existing configuration");
+	}
+
+	@Test
 	void getConfigurationById() {
 		// given
 		var expectedConfigurationResponse = ConfigurationResponse.builder()
@@ -168,7 +177,21 @@ public class ConfigurationPersistenceServiceTest {
 	}
 
 	@Test
-	void updateConfiguration_shouldNotUpdateConfiguration_andThrowException_ifConfigurationIsNotFoundById() {
+	void updateConfiguration_shouldThrowException_ifTimeRangeIntersectsWithOtherConfigurations() {
+		// given
+		var configurationWithTimeRangeIntersection = CONFIGURATION_ENTITY.toBuilder().id(20L).build();
+
+		// and
+		when(repository.getConfigurationsWithTimeRangeIntersection(CONFIGURATION_START_TIMESTAMP, CONFIGURATION_END_TIMESTAMP)).thenReturn(List.of(configurationWithTimeRangeIntersection));
+
+		// expect
+		assertThatThrownBy(() -> configurationPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Configuration time range intersects with another existing configuration");
+	}
+
+	@Test
+	void updateConfiguration_shouldThrowException_ifConfigurationIsNotFoundById() {
 		when(repository.findById(CONFIGURATION_ID)).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> configurationPersistenceService.updateConfiguration(CONFIGURATION_ID, CONFIGURATION_REQUEST))

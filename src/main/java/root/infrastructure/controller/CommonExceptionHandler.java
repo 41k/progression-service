@@ -32,6 +32,7 @@ public class CommonExceptionHandler {
 	}
 
 	@ExceptionHandler({
+			IllegalArgumentException.class,
 			ConstraintViolationException.class,
 			MethodArgumentNotValidException.class
 	})

@@ -12,6 +12,13 @@ public interface ConfigurationRepository extends JpaRepository<ConfigurationEnti
 	@Query(value = "TRUNCATE TABLE configurations", nativeQuery = true)
 	void truncate();
 
-	@Query("FROM ConfigurationEntity configuration WHERE configuration.endTimestamp >= :currentTimestamp")
+	@Query("FROM ConfigurationEntity configuration WHERE configuration.endTimestamp > :currentTimestamp")
 	List<ConfigurationEntity> getActiveAndPendingConfigurations(long currentTimestamp);
+
+	@Query(
+			"FROM ConfigurationEntity configuration " +
+			"WHERE configuration.startTimestamp BETWEEN :startTimestamp AND :endTimestamp " +
+			"OR configuration.endTimestamp BETWEEN :startTimestamp AND :endTimestamp"
+	)
+	List<ConfigurationEntity> getConfigurationsWithTimeRangeIntersection(long startTimestamp, long endTimestamp);
 }
