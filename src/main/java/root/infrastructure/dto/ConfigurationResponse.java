@@ -8,6 +8,7 @@ import root.application.model.ProgressionType;
 @Builder
 public record ConfigurationResponse(
 		long id,
+		String name,
 		long startTimestamp,
 		long endTimestamp,
 		long updateTimestamp,

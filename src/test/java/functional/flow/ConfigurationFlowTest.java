@@ -1,13 +1,15 @@
 package functional.flow;
 
-import static functional.FunctionalTestData.ALL_CONFIGURATIONS_RESPONSE_BODY;
+import static functional.FunctionalTestData.CONFIGURATIONS_RESPONSE_BODY;
 import static functional.FunctionalTestData.CONFIGURATION_REQUEST_BODY;
 import static functional.FunctionalTestData.CONFIGURATION_RESPONSE_BODY;
+import static functional.FunctionalTestData.EMPTY_PAGINATED_RESPONSE_BODY;
 import static functional.FunctionalTestData.SEGMENT_1;
 import static functional.FunctionalTestData.configurationEntity;
 import static functional.FunctionalTestData.configurationEntityBeforeUpdate;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -16,9 +18,10 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -32,10 +35,11 @@ import root.application.model.ProgressionType;
 import root.infrastructure.dto.ConfigurationRequest;
 import root.infrastructure.dto.ProgressionConfigurationDto;
 import root.infrastructure.dto.RewardDto;
+import root.infrastructure.persistence.configuration.ConfigurationEntity;
 
 public class ConfigurationFlowTest extends FunctionalTest {
 
-	private static final String CONFIGURATIONS_URL = "/progression-service/admin/v1/configurations";
+	private static final String CONFIGURATIONS_URL = "/progression-service/api/admin/v1/configurations";
 	private static final String CONFIGURATION_URI = CONFIGURATIONS_URL + "/%d";
 
 	@Test
@@ -174,21 +178,41 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		assertThat(response).isEqualTo("Validation failure: Configuration time range intersects with another existing configuration");
 	}
 
-	@Test
-	void shouldReturnAllConfigurations() {
+	@ParameterizedTest(name = "{0}")
+	@MethodSource("configurationsRetrievalRequests")
+	void shouldReturnConfigurations(String testName, String requestParams, String responseBody) {
 		// given
-		configurationRepository.saveAllAndFlush(List.of(
-				configurationEntityBeforeUpdate(),
-				configurationEntity()
-		));
+		var configurations = new ArrayList<ConfigurationEntity>();
+		IntStream.range(1, 10).forEach(i -> {
+			var startTimestamp = 10L * i;
+			var endTimestamp = 11L * i;
+			configurations.add(configurationEntity().toBuilder().name("group-a-config-" + i).startTimestamp(startTimestamp).endTimestamp(endTimestamp).build());
+			configurations.add(configurationEntity().toBuilder().name("group-b-config-" + i).startTimestamp(startTimestamp).endTimestamp(endTimestamp).build());
+		});
+		configurationRepository.saveAllAndFlush(configurations);
 
 		// expect
 		when()
-				.get(CONFIGURATIONS_URL)
+				.get(CONFIGURATIONS_URL + requestParams)
 				.then()
 				.statusCode(OK.value())
 				.log().all()
-				.body(equalsToJson(ALL_CONFIGURATIONS_RESPONSE_BODY));
+				.body(equalsToJson(responseBody));
+	}
+
+	@ParameterizedTest(name = "{0}")
+	@MethodSource("invalidConfigurationsRetrievalRequests")
+	void shouldNotReturnConfigurations_ifRequestIsNotValid(String testCaseName, String requestParams, String validationFailureReason) {
+		// when
+		String response = when()
+				.get(CONFIGURATIONS_URL + requestParams)
+				.then()
+				.statusCode(BAD_REQUEST.value())
+				.log().all()
+				.extract().body().asString();
+
+		// then
+		assertThat(response).contains(validationFailureReason);
 	}
 
 	@Test
@@ -248,6 +272,16 @@ public class ConfigurationFlowTest extends FunctionalTest {
 		var progressionConfiguration = CONFIGURATION_REQUEST_BODY.segmentedProgressionsConfiguration().get(SEGMENT_1).get(SOURCE_1_WON);
 		return Stream.of(
 				Arguments.of(
+						"name is null",
+						CONFIGURATION_REQUEST_BODY.toBuilder().name(null).build(),
+						new String[] {"on field 'name': rejected value [null]", "must not be blank"}
+				),
+				Arguments.of(
+						"name is empty string",
+						CONFIGURATION_REQUEST_BODY.toBuilder().name(EMPTY).build(),
+						new String[] {"on field 'name': rejected value []", "must not be blank"}
+				),
+				Arguments.of(
 						"startTimestamp is not positive",
 						CONFIGURATION_REQUEST_BODY.toBuilder().startTimestamp(-1).build(),
 						new String[] {"on field 'startTimestamp': rejected value [-1]", "must be greater than 0"}
@@ -296,6 +330,66 @@ public class ConfigurationFlowTest extends FunctionalTest {
 						"reward.amount is not positive",
 						CONFIGURATION_REQUEST_BODY.toBuilder().segmentedProgressionsConfiguration(Map.of(SEGMENT_1, Map.of(SOURCE_1_WON, progressionConfiguration.toBuilder().reward(new RewardDto(1, 0)).build()))).build(),
 						new String[] {"on field 'segmentedProgressionsConfiguration[segment-1][SOURCE_1_WON].reward.amount': rejected value [0]", "must be greater than 0"}
+				)
+		);
+	}
+
+	static Stream<Arguments> configurationsRetrievalRequests() {
+		return Stream.of(
+				Arguments.of(
+						"several configurations match filter",
+						"?pageNumber=1&pageSize=2&orderBy=id&order=desc&name=a-config&startTimestamp=30&endTimestamp=90",
+						CONFIGURATIONS_RESPONSE_BODY
+				),
+				Arguments.of(
+						"no configurations match filter",
+						"?pageNumber=0&pageSize=1&orderBy=id&order=desc&name=non-existent-name",
+						EMPTY_PAGINATED_RESPONSE_BODY
+				)
+		);
+	}
+
+	static Stream<Arguments> invalidConfigurationsRetrievalRequests() {
+		return Stream.of(
+				Arguments.of(
+						"pageNumber is not provided",
+						"?pageSize=2&orderBy=id&order=asc",
+						"Required request parameter 'pageNumber' for method parameter type Integer is not present"
+				),
+				Arguments.of(
+						"pageNumber is negative",
+						"?pageNumber=-1&pageSize=2&orderBy=id&order=asc",
+						"getConfigurations.pageNumber: must be greater than or equal to 0"
+				),
+				Arguments.of(
+						"pageSize is not provided",
+						"?pageNumber=1&orderBy=id&order=asc",
+						"Required request parameter 'pageSize' for method parameter type Integer is not present"
+				),
+				Arguments.of(
+						"pageSize is less than 1",
+						"?pageNumber=1&pageSize=0&orderBy=id&order=asc",
+						"getConfigurations.pageSize: must be greater than or equal to 1"
+				),
+				Arguments.of(
+						"orderBy is not provided",
+						"?pageNumber=1&pageSize=2&order=asc",
+						"Required request parameter 'orderBy' for method parameter type String is not present"
+				),
+				Arguments.of(
+						"orderBy is empty string",
+						"?pageNumber=1&pageSize=2&orderBy=&order=asc",
+						"getConfigurations.orderBy: must not be blank"
+				),
+				Arguments.of(
+						"order is not provided",
+						"?pageNumber=1&pageSize=2&orderBy=id",
+						"Required request parameter 'order' for method parameter type String is not present"
+				),
+				Arguments.of(
+						"order is invalid",
+						"?pageNumber=1&pageSize=2&orderBy=id&order=whatever",
+						"getConfigurations.order: must match \"(?i)^asc|desc$\""
 				)
 		);
 	}

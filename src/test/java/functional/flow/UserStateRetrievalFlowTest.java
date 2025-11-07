@@ -17,7 +17,7 @@ import functional.FunctionalTest;
 
 public class UserStateRetrievalFlowTest extends FunctionalTest {
 
-	private static final String ME_URI = "/progression-service/public/v1/me";
+	private static final String ME_URI = "/progression-service/api/public/v1/me";
 	private static final String USER_STATE_NOT_FOUND_RESPONSE = "Resource is not found: Active user state is not found by id=" + USER_ID;
 
 	@Test

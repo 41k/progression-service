@@ -1,5 +1,6 @@
 {
   "id": 1,
+  "name": "configuration-1",
   "startTimestamp": 500,
   "endTimestamp": 1500,
   "updateTimestamp": 600,

@@ -14,6 +14,8 @@ import root.infrastructure.dto.validation.TimeRangeValidation;
 @TimeRangeValidation
 @Builder(toBuilder = true)
 public record ConfigurationRequest(
+		@NotBlank
+		String name,
 		@Positive
 		long startTimestamp,
 		@Positive

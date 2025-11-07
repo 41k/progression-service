@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import root.application.service.UserStateService;
@@ -16,8 +17,9 @@ import root.infrastructure.ConfigurationMapper;
 import root.infrastructure.dto.ProgressionDto;
 import root.infrastructure.dto.UserStateResponse;
 
+@Tag(name = "Me API")
 @RestController
-@RequestMapping(path = "/${spring.application.name}/public/v1/me", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/${spring.application.name}/api/public/v1/me", produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
 @RequiredArgsConstructor
 public class MeController {

@@ -26,6 +26,7 @@ public class UnitTestData {
 
 	public static final String USER_ID = "1000";
 	public static final Long CONFIGURATION_ID = 1L;
+	public static final String CONFIGURATION_NAME = "configuration";
 	public static final Long CONFIGURATION_START_TIMESTAMP = 500L;
 	public static final Long CONFIGURATION_END_TIMESTAMP = 1500L;
 	public static final Long CONFIGURATION_UPDATE_TIMESTAMP = 1000L;
@@ -70,6 +71,7 @@ public class UnitTestData {
 
 	public static final ConfigurationRequest CONFIGURATION_REQUEST =
 			ConfigurationRequest.builder()
+					.name(CONFIGURATION_NAME)
 					.startTimestamp(CONFIGURATION_START_TIMESTAMP)
 					.endTimestamp(CONFIGURATION_END_TIMESTAMP)
 					.segmentedProgressionsConfiguration(SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO)
@@ -78,6 +80,7 @@ public class UnitTestData {
 	public static final Configuration CONFIGURATION =
 			Configuration.builder()
 					.id(CONFIGURATION_ID)
+					.name(CONFIGURATION_NAME)
 					.startTimestamp(CONFIGURATION_START_TIMESTAMP)
 					.endTimestamp(CONFIGURATION_END_TIMESTAMP)
 					.updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP)
@@ -87,6 +90,7 @@ public class UnitTestData {
 	public static final ConfigurationEntity CONFIGURATION_ENTITY =
 			ConfigurationEntity.builder()
 					.id(CONFIGURATION_ID)
+					.name(CONFIGURATION_NAME)
 					.startTimestamp(CONFIGURATION_START_TIMESTAMP)
 					.endTimestamp(CONFIGURATION_END_TIMESTAMP)
 					.updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP)

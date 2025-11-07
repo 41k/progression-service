@@ -1,0 +1,22 @@
+{
+  "currentPage": 1,
+  "pageSize": 2,
+  "totalPages": 3,
+  "totalElements": 6,
+  "data": [
+    {
+      "id": 9,
+      "name": "group-a-config-5",
+      "startTimestamp": 50,
+      "endTimestamp": 55,
+      "updateTimestamp": 600
+    },
+    {
+      "id": 11,
+      "name": "group-a-config-6",
+      "startTimestamp": 60,
+      "endTimestamp": 66,
+      "updateTimestamp": 600
+    }
+  ]
+}

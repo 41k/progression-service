@@ -4,6 +4,7 @@ import root.application.model.ProgressionType;
 import root.application.model.UserState;
 import root.application.model.event.Event;
 
+// todo: functional tests
 public abstract class Source1EventProgressionHandler implements ProgressionHandler {
 
 	@Override

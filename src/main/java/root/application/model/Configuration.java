@@ -8,6 +8,7 @@ import lombok.Builder;
 @Builder(toBuilder = true)
 public record Configuration(
 		long id,
+		String name,
 		long startTimestamp,
 		long endTimestamp,
 		long updateTimestamp,

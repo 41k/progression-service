@@ -22,14 +22,14 @@ public class FunctionalTestData {
 
 	public static final String USER_ID = "1000";
 	public static final String SEGMENT_1 = "segment-1";
-	public static final String SEGMENT_2 = "segment-2";
 	public static final Long CURRENT_TIMESTAMP = 600L;
 
 	public static final String SEGMENTATION_URL = "/segmentation-service/api/v1/evaluate";
 
 	public static final ConfigurationRequest CONFIGURATION_REQUEST_BODY = deserialize("http/request/configuration-request-body.json", ConfigurationRequest.class);
 	public static final String CONFIGURATION_RESPONSE_BODY = getFileContent("http/response/configuration-response-body.json");
-	public static final String ALL_CONFIGURATIONS_RESPONSE_BODY = getFileContent("http/response/all-configurations-response-body.json");
+	public static final String CONFIGURATIONS_RESPONSE_BODY = getFileContent("http/response/configurations-response-body.json");
+	public static final String EMPTY_PAGINATED_RESPONSE_BODY = getFileContent("http/response/empty-paginated-response-body.json");
 	public static final String USER_STATE_RESPONSE_BODY = getFileContent("http/response/user-state-response-body.json");
 	public static final String SEGMENTATION_REQUEST_BODY = getFileContent("http/request/segmentation-request-body.json");
 	public static final String SEGMENTATION_RESPONSE_BODY = getFileContent("http/response/segmentation-response-body.json");

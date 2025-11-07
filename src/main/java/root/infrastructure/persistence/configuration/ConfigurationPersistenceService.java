@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -17,9 +18,11 @@ import root.application.model.Configuration;
 import root.application.service.ConfigurationService;
 import root.configuration.properties.ConfigurationsCacheProperties;
 import root.infrastructure.ConfigurationMapper;
+import root.infrastructure.dto.ConfigurationInfoDto;
 import root.infrastructure.dto.ConfigurationRequest;
 import root.infrastructure.dto.ConfigurationResponse;
-import root.infrastructure.dto.ConfigurationsResponse;
+import root.infrastructure.dto.ConfigurationsFilterDto;
+import root.infrastructure.dto.PaginatedResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 	private final ConfigurationsCacheProperties cacheProperties;
 	private final Cache<String, Map<Long, Configuration>> cache;
 	private final CacheLoader<String, Map<Long, Configuration>> cacheLoader;
+	private final SpecificationBuilder specificationBuilder;
 	private final ConfigurationRepository repository;
 	private final ConfigurationMapper mapper;
 	private final Clock clock;
@@ -42,9 +46,10 @@ public class ConfigurationPersistenceService implements ConfigurationService {
 		return repository.save(configuration).getId();
 	}
 
-	public ConfigurationsResponse getConfigurations() {
-		var configurations = repository.findAll().stream().map(mapper::toDto).toList();
-		return new ConfigurationsResponse(configurations);
+	public PaginatedResponse<ConfigurationInfoDto> getConfigurations(ConfigurationsFilterDto filter, Pageable pageSettings) {
+		var specification = specificationBuilder.build(filter);
+		var page = repository.findAll(specification, pageSettings);
+		return mapper.toResponse(page);
 	}
 
 	public ConfigurationResponse getConfigurationById(Long id) {

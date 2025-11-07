@@ -1,4 +1,5 @@
 {
+  "name": "configuration-1",
   "startTimestamp": 500,
   "endTimestamp": 1500,
   "segmentedProgressionsConfiguration": {

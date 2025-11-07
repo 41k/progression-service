@@ -10,6 +10,7 @@ import static unit.UnitTestData.CONFIGURATION;
 import static unit.UnitTestData.CONFIGURATION_END_TIMESTAMP;
 import static unit.UnitTestData.CONFIGURATION_ENTITY;
 import static unit.UnitTestData.CONFIGURATION_ID;
+import static unit.UnitTestData.CONFIGURATION_NAME;
 import static unit.UnitTestData.CONFIGURATION_REQUEST;
 import static unit.UnitTestData.CONFIGURATION_START_TIMESTAMP;
 import static unit.UnitTestData.CONFIGURATION_UPDATE_TIMESTAMP;
@@ -28,6 +29,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
@@ -38,10 +42,12 @@ import root.configuration.properties.ConfigurationsCacheProperties;
 import root.infrastructure.ConfigurationMapperImpl;
 import root.infrastructure.dto.ConfigurationInfoDto;
 import root.infrastructure.dto.ConfigurationResponse;
-import root.infrastructure.dto.ConfigurationsResponse;
+import root.infrastructure.dto.ConfigurationsFilterDto;
+import root.infrastructure.dto.PaginatedResponse;
 import root.infrastructure.persistence.configuration.ConfigurationEntity;
 import root.infrastructure.persistence.configuration.ConfigurationPersistenceService;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
+import root.infrastructure.persistence.configuration.SpecificationBuilder;
 
 @ExtendWith(MockitoExtension.class)
 public class ConfigurationPersistenceServiceTest {
@@ -74,6 +80,8 @@ public class ConfigurationPersistenceServiceTest {
 	private Cache<String, Map<Long, Configuration>> cache;
 	@Mock
 	private CacheLoader<String, Map<Long, Configuration>> cacheLoader;
+	@Spy
+	private SpecificationBuilder specificationBuilder;
 	@Mock
 	private ConfigurationRepository repository;
 	@Spy
@@ -113,6 +121,7 @@ public class ConfigurationPersistenceServiceTest {
 		// given
 		var expectedConfigurationResponse = ConfigurationResponse.builder()
 				.id(CONFIGURATION_ID)
+				.name(CONFIGURATION_NAME)
 				.startTimestamp(CONFIGURATION_START_TIMESTAMP)
 				.endTimestamp(CONFIGURATION_END_TIMESTAMP)
 				.updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP)
@@ -141,23 +150,34 @@ public class ConfigurationPersistenceServiceTest {
 	@Test
 	void getConfigurations() {
 		// given
-		var configurationEntities = List.of(
-				CONFIGURATION_ENTITY.toBuilder().id(1L).startTimestamp(100L).endTimestamp(200L).build(),
-				CONFIGURATION_ENTITY.toBuilder().id(2L).startTimestamp(300L).endTimestamp(400L).build()
+		var pageSettings = PageRequest.of(0, 2);
+		var filter = ConfigurationsFilterDto.builder().build();
+		var specification = Specification.<ConfigurationEntity>where(null);
+		var entities = List.of(
+				ConfigurationEntity.builder().id(1L).name("c-1").startTimestamp(10L).endTimestamp(20L).updateTimestamp(15L).build(),
+				ConfigurationEntity.builder().id(2L).name("c-2").startTimestamp(20L).endTimestamp(30L).updateTimestamp(25L).build()
 		);
-		var expectedConfigurationsResponse = new ConfigurationsResponse(List.of(
-				ConfigurationInfoDto.builder().id(1L).startTimestamp(100L).endTimestamp(200L).updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP).build(),
-				ConfigurationInfoDto.builder().id(2L).startTimestamp(300L).endTimestamp(400L).updateTimestamp(CONFIGURATION_UPDATE_TIMESTAMP).build()
-		));
+		var page = new PageImpl<>(entities, pageSettings, 2);
+		var expectedPaginatedResponse = PaginatedResponse.<ConfigurationInfoDto>builder()
+				.currentPage(0)
+				.pageSize(2)
+				.totalPages(1)
+				.totalElements(2L)
+				.data(List.of(
+						ConfigurationInfoDto.builder().id(1L).name("c-1").startTimestamp(10L).endTimestamp(20L).updateTimestamp(15L).build(),
+						ConfigurationInfoDto.builder().id(2L).name("c-2").startTimestamp(20L).endTimestamp(30L).updateTimestamp(25L).build()
+				))
+				.build();
 
 		// and
-		when(repository.findAll()).thenReturn(configurationEntities);
+		when(specificationBuilder.build(filter)).thenReturn(specification);
+		when(repository.findAll(specification, pageSettings)).thenReturn(page);
 
 		// when
-		var configurationsResponse = configurationPersistenceService.getConfigurations();
+		var paginatedResponse = configurationPersistenceService.getConfigurations(filter, pageSettings);
 
 		// then
-		assertThat(configurationsResponse).isEqualTo(expectedConfigurationsResponse);
+		assertThat(paginatedResponse).isEqualTo(expectedPaginatedResponse);
 	}
 
 	@Test
