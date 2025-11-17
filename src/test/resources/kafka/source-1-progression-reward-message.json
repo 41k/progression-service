@@ -1,0 +1,9 @@
+{
+  "userId": "1000",
+  "rewards": [
+    {
+      "unitId": 1,
+      "amount": 100
+    }
+  ]
+}

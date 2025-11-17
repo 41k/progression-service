@@ -14,11 +14,6 @@ import root.application.model.Configuration;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 
-// todo: change structure of "integration" layer packages to
-// http.inbound, http.outbound
-// messaging.consumer, messaging.producer
-// persistence
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -54,8 +49,8 @@ public class UserStateService {
 				.orElseThrow(() -> new NoSuchElementException("Active user state is not found by id=" + userId));
 	}
 
-	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
-		return optimisticLockRetryTemplate.execute(context -> {
+	public void updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
+		optimisticLockRetryTemplate.execute(context -> {
 			if (context.getRetryCount() > 0) {
 				log.warn("Optimistic lock happened during user[{}] state update. Retry {}", userId, context.getRetryCount());
 			}
@@ -67,20 +62,25 @@ public class UserStateService {
 	}
 
 	private UserState syncUserStateWithLatestConfigurationUpdates(UserState userState) {
-		var userId = userState.getUserId();
-		var existingUserConfiguration = userState.getConfiguration();
-		var configurationId = existingUserConfiguration.id();
-		var segmentedConfiguration = configurationService.getActiveConfigurationById(configurationId);
-		if (segmentedConfiguration == null) {
-			log.debug("Configuration[{}] is no longer active/exist for user[{}]", configurationId, userId);
-			return null;
+		try {
+			var userId = userState.getUserId();
+			var existingUserConfiguration = userState.getConfiguration();
+			var configurationId = existingUserConfiguration.id();
+			var segmentedConfiguration = configurationService.getActiveConfigurationById(configurationId);
+			if (segmentedConfiguration == null) {
+				log.debug("Configuration[{}] is no longer active/exist for user[{}]", configurationId, userId);
+				return null;
+			}
+			if (segmentationService.shouldReevaluateSegmentation(existingUserConfiguration.updateTimestamp())) {
+				return segmentConfiguration(userId, segmentedConfiguration)
+						.map(newUserConfiguration -> userState.toBuilder().configuration(newUserConfiguration).build())
+						.orElse(null);
+			}
+			return userState;
+		} catch (Exception e) {
+			log.error("Failed to sync UserState with the latest configuration updates", e);
+			return userState;
 		}
-		if (segmentationService.shouldReevaluateSegmentation(existingUserConfiguration.updateTimestamp())) {
-			return segmentConfiguration(userId, segmentedConfiguration)
-					.map(newUserConfiguration -> userState.toBuilder().configuration(newUserConfiguration).build())
-					.orElse(null);
-		}
-		return userState;
 	}
 
 	private Optional<UserConfiguration> segmentConfiguration(String userId, Configuration segmentedConfiguration) {

@@ -3,10 +3,11 @@ package unit.application.model;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 import static unit.UnitTestData.EVENT;
+import static unit.UnitTestData.REWARD_1;
 import static unit.UnitTestData.USER_STATE;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import root.application.model.ProgressionType;
 import root.application.model.ProgressionUpdateTask;
 import root.application.service.progression.handler.ProgressionHandler;
 
@@ -35,36 +35,26 @@ public class ProgressionUpdateTaskTest {
 	@Test
 	void apply_shouldUpdateProgressionSuccessfully() {
 		// given
-		var userStateAfterUpdateByProgressionHandler1 = USER_STATE.toBuilder().progressions(Map.of(
-				ProgressionType.SOURCE_1_TOTAL, 1L
-		)).build();
-		var userStateAfterUpdateByProgressionHandler2 = USER_STATE.toBuilder().progressions(Map.of(
-				ProgressionType.SOURCE_1_TOTAL, 1L,
-				ProgressionType.SOURCE_1_WON, 1L
-		)).build();
-		when(progressionHandler1.handle(EVENT, USER_STATE)).thenReturn(userStateAfterUpdateByProgressionHandler1);
-		when(progressionHandler2.handle(EVENT, userStateAfterUpdateByProgressionHandler1)).thenReturn(userStateAfterUpdateByProgressionHandler2);
+		when(progressionHandler1.handle(EVENT, USER_STATE)).thenReturn(Optional.of(REWARD_1));
+		when(progressionHandler2.handle(EVENT, USER_STATE)).thenReturn(Optional.empty());
 
 		// when
-		var updatedUserState = progressionUpdateTask.apply(USER_STATE);
+		progressionUpdateTask.apply(USER_STATE);
 
 		// then
-		assertThat(updatedUserState).isEqualTo(userStateAfterUpdateByProgressionHandler2);
+		assertThat(progressionUpdateTask.getOutcome()).isEqualTo(List.of(REWARD_1));
 	}
 
 	@Test
 	void apply_shouldSwallowExceptionThrownByAnyProgressionHandlerAndProceed() {
 		// given
-		var userStateAfterUpdateByProgressionHandler2 = USER_STATE.toBuilder().progressions(Map.of(
-				ProgressionType.SOURCE_1_WON, 1L
-		)).build();
 		when(progressionHandler1.handle(EVENT, USER_STATE)).thenThrow(new RuntimeException());
-		when(progressionHandler2.handle(EVENT, USER_STATE)).thenReturn(userStateAfterUpdateByProgressionHandler2);
+		when(progressionHandler2.handle(EVENT, USER_STATE)).thenReturn(Optional.empty());
 
 		// when
-		var updatedUserState = progressionUpdateTask.apply(USER_STATE);
+		progressionUpdateTask.apply(USER_STATE);
 
 		// then
-		assertThat(updatedUserState).isEqualTo(userStateAfterUpdateByProgressionHandler2);
+		assertThat(progressionUpdateTask.getOutcome()).isEqualTo(List.of());
 	}
 }

@@ -1,18 +1,18 @@
 {
   "name": "configuration-1",
-  "startTimestamp": 500,
+  "startTimestamp": 400,
   "endTimestamp": 1500,
   "segmentedProgressionsConfiguration": {
     "segment-1": {
       "SOURCE_1_WON": {
-        "progressionTarget": 5,
+        "progressionTarget": 3,
         "reward": {
           "unitId": 1,
           "amount": 100
         }
       },
       "SOURCE_1_TOTAL": {
-        "progressionTarget": 10,
+        "progressionTarget": 5,
         "reward": {
           "unitId": 1,
           "amount": 100

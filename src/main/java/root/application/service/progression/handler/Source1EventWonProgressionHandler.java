@@ -7,7 +7,7 @@ import root.application.model.event.Event;
 import root.application.model.event.Source1Event;
 
 @Component
-public class Source1EventWonProgressionHandler extends Source1EventProgressionHandler {
+public class Source1EventWonProgressionHandler extends ProgressionHandler {
 
 	private static final String WON_RESULT = "WON";
 
@@ -20,5 +20,10 @@ public class Source1EventWonProgressionHandler extends Source1EventProgressionHa
 	@Override
 	protected ProgressionType getProgressionType() {
 		return ProgressionType.SOURCE_1_WON;
+	}
+
+	@Override
+	protected Long calculateProgressionValue(Long currentProgressionValue, Event event) {
+		return currentProgressionValue + 1;
 	}
 }

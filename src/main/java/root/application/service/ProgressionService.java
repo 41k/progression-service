@@ -29,7 +29,10 @@ public class ProgressionService {
 				log.debug("No eligible progression handlers for {}", event);
 				return;
 			}
-			process(event, progressionHandlers);
+			var userId = event.getUserId();
+			var progressionUpdateTask = new ProgressionUpdateTask(event, progressionHandlers);
+			userStateService.updateUserStateIfPresent(userId, progressionUpdateTask);
+			rewardService.sendRewards(userId, progressionUpdateTask.getOutcome());
 		} catch (Exception e) {
 			log.error("Failed to process {}", event, e);
 		}
@@ -41,13 +44,5 @@ public class ProgressionService {
 				.map(progressionHandlers::get)
 				.filter(progressionHandler -> progressionHandler != null && progressionHandler.isEligible(event))
 				.toList();
-	}
-
-	private void process(Event event, List<ProgressionHandler> progressionHandlers) {
-		var userId = event.getUserId();
-		var progressionUpdateTask = new ProgressionUpdateTask(event, progressionHandlers);
-		var updatedUserState = userStateService.updateUserStateIfPresent(userId, progressionUpdateTask);
-		updatedUserState.ifPresentOrElse(rewardService::sendRewards,
-				() -> log.debug("User[{}] state is not found, skipping {}", userId, event));
 	}
 }

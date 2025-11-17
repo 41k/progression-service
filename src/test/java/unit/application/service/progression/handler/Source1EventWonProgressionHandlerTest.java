@@ -6,12 +6,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
 import static unit.UnitTestData.REWARD_1;
-import static unit.UnitTestData.REWARD_2;
 import static unit.UnitTestData.USER_CONFIGURATION;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -47,22 +44,20 @@ public class Source1EventWonProgressionHandlerTest {
 					put(SOURCE_1_WON, 3L);
 				}})
 				.build();
-		var expectedUserStateAfterEventHandling = userState.toBuilder()
-				.progressions(Map.of(
-						SOURCE_1_TOTAL, 7L,
-						SOURCE_1_WON, 4L
-				))
-				.build();
 
 		// when
-		var userStateAfterEventHandling = HANDLER.handle(event, userState);
+		var reward = HANDLER.handle(event, userState);
 
 		// then
-		assertThat(userStateAfterEventHandling).isEqualTo(expectedUserStateAfterEventHandling);
+		assertThat(reward.isEmpty()).isTrue();
+		assertThat(userState.getProgressions()).isEqualTo(Map.of(
+				SOURCE_1_TOTAL, 7L,
+				SOURCE_1_WON, 4L
+		));
 	}
 
 	@Test
-	void handle_shouldAddReward_andResetProgressionToZero_ifProgressionThresholdIsReached() {
+	void handle_shouldResetProgressionToZero_andReturnReward_ifProgressionThresholdIsReached() {
 		// given
 		var event = new Source1Event();
 		var userState = UserState.builder()
@@ -71,23 +66,17 @@ public class Source1EventWonProgressionHandlerTest {
 					put(SOURCE_1_TOTAL, 6L);
 					put(SOURCE_1_WON, 4L);
 				}})
-				.rewards(new ArrayList<>() {{
-					add(REWARD_2);
-				}})
-				.build();
-		var expectedUserStateAfterEventHandling = userState.toBuilder()
-				.progressions(Map.of(
-						SOURCE_1_TOTAL, 6L,
-						SOURCE_1_WON, 0L
-				))
-				.rewards(List.of(REWARD_2, REWARD_1))
 				.build();
 
 		// when
-		var userStateAfterEventHandling = HANDLER.handle(event, userState);
+		var reward = HANDLER.handle(event, userState).orElseThrow();
 
 		// then
-		assertThat(userStateAfterEventHandling).isEqualTo(expectedUserStateAfterEventHandling);
+		assertThat(reward).isEqualTo(REWARD_1);
+		assertThat(userState.getProgressions()).isEqualTo(Map.of(
+				SOURCE_1_TOTAL, 6L,
+				SOURCE_1_WON, 0L
+		));
 	}
 
 	@Test
@@ -98,17 +87,21 @@ public class Source1EventWonProgressionHandlerTest {
 				.configuration(
 						UserConfiguration.builder().progressionsConfiguration(Map.of()).build()
 				)
-				.progressions(Map.of(
-						SOURCE_1_TOTAL, 4L,
-						SOURCE_1_WON, 1L
-				))
+				.progressions(new HashMap<>() {{
+					put(SOURCE_1_TOTAL, 4L);
+					put(SOURCE_1_WON, 1L);
+				}})
 				.build();
 
 		// when
-		var userStateAfterEventHandling = HANDLER.handle(event, userState);
+		var reward = HANDLER.handle(event, userState);
 
 		// then
-		assertThat(userStateAfterEventHandling).isEqualTo(userState);
+		assertThat(reward.isEmpty()).isTrue();
+		assertThat(userState.getProgressions()).isEqualTo(Map.of(
+				SOURCE_1_TOTAL, 4L,
+				SOURCE_1_WON, 1L
+		));
 	}
 
 	private static Stream<Arguments> eligibilityCheckParams() {

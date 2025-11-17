@@ -35,11 +35,15 @@ public class FunctionalTestData {
 	public static final String SEGMENTATION_RESPONSE_BODY = getFileContent("http/response/segmentation-response-body.json");
 	public static final String SEGMENTATION_EMPTY_RESPONSE_BODY = "{}";
 	public static final String LOGIN_EVENT = getFileContent("kafka/login-event.json");
+	public static final String SOURCE_1_EVENT_FOR_TOTAL_PROGRESSION = getFileContent("kafka/source-1-event-for-total-progression.json");
+	public static final String SOURCE_1_EVENT_FOR_WON_PROGRESSION = getFileContent("kafka/source-1-event-for-won-progression.json");
+	public static final String SOURCE_1_PROGRESSION_REWARD_MESSAGE = getFileContent("kafka/source-1-progression-reward-message.json");
 	private static final String CONFIGURATION_ENTITY = getFileContent("db/configuration/configuration-entity.json");
 	private static final String CONFIGURATION_ENTITY_BEFORE_UPDATE = getFileContent("db/configuration/configuration-entity-before-update.json");
-	private static final UserStateDocument USER_STATE = deserialize("db/state/user-state.json", UserStateDocument.class);
-	private static final UserStateDocument USER_STATE_WITH_INACTIVE_CONFIGURATION = deserialize("db/state/user-state-with-inactive-configuration.json", UserStateDocument.class);
-	private static final UserStateDocument USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION = deserialize("db/state/user-state-with-new-active-configuration.json", UserStateDocument.class);
+	private static final String USER_STATE = getFileContent("db/state/user-state.json");
+	private static final String USER_STATE_WITH_INACTIVE_CONFIGURATION = getFileContent("db/state/user-state-with-inactive-configuration.json");
+	private static final String USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION = getFileContent("db/state/user-state-with-new-active-configuration.json");
+	private static final String USER_STATE_WITH_ACTIVE_OUTDATED_CONFIGURATION = getFileContent("db/state/user-state-with-active-outdated-configuration.json");
 
 	public static ConfigurationEntity configurationEntity(Long configurationId) {
 		return configurationEntity().toBuilder().id(configurationId).build();
@@ -55,16 +59,26 @@ public class FunctionalTestData {
 		return OBJECT_MAPPER.readValue(CONFIGURATION_ENTITY_BEFORE_UPDATE, ConfigurationEntity.class);
 	}
 
+	@SneakyThrows
 	public static UserStateDocument userState(long version) {
-		return USER_STATE.toBuilder().version(version).build();
+		return OBJECT_MAPPER.readValue(USER_STATE, UserStateDocument.class).toBuilder().version(version).build();
 	}
 
+	@SneakyThrows
 	public static UserStateDocument userStateWithInactiveConfiguration(long version) {
-		return USER_STATE_WITH_INACTIVE_CONFIGURATION.toBuilder().version(version).build();
+		return OBJECT_MAPPER.readValue(USER_STATE_WITH_INACTIVE_CONFIGURATION, UserStateDocument.class)
+				.toBuilder().version(version).build();
 	}
 
+	@SneakyThrows
 	public static UserStateDocument userStateWithNewActiveConfiguration(long version) {
-		return USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION.toBuilder().version(version).build();
+		return OBJECT_MAPPER.readValue(USER_STATE_WITH_NEW_ACTIVE_CONFIGURATION, UserStateDocument.class)
+				.toBuilder().version(version).build();
+	}
+
+	@SneakyThrows
+	public static UserStateDocument userStateWithActiveOutdatedConfiguration() {
+		return OBJECT_MAPPER.readValue(USER_STATE_WITH_ACTIVE_OUTDATED_CONFIGURATION, UserStateDocument.class);
 	}
 
 	@SneakyThrows

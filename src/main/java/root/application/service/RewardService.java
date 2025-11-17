@@ -1,8 +1,10 @@
 package root.application.service;
 
-import root.application.model.UserState;
+import java.util.List;
+
+import root.application.model.Reward;
 
 public interface RewardService {
 
-	void sendRewards(UserState userState);
+	void sendRewards(String userId, List<Reward> rewards);
 }

@@ -12,8 +12,10 @@ spring:
     bootstrap-servers: ${embedded.kafka.brokerList}
     consumer.auto-offset-reset: earliest
 
-embedded.kafka.topicsToCreate: login, source-1
+embedded.kafka.topicsToCreate: login, source-1, rewards
 
-segmentation.url: http://localhost:${wiremock.server.port}/segmentation-service/api/v1/evaluate
+segmentation:
+  url: http://localhost:${wiremock.server.port}/segmentation-service/api/v1/evaluate
+  reevaluation-period-millis: 100
 
 configurations-cache.refresh-millis: 100

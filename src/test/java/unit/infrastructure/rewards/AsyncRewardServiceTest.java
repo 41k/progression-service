@@ -40,12 +40,11 @@ public class AsyncRewardServiceTest {
 	@Test
 	void sendRewards() {
 		// given
-		var userStateWithRewards = UserState.builder().userId(USER_ID).rewards(REWARDS).build();
 		var message = new RewardsMessage(USER_ID, REWARDS);
 		when(kafkaTemplate.send(TOPIC, USER_ID, message)).thenReturn(CompletableFuture.completedFuture(null));
 
 		// when
-		asyncRewardService.sendRewards(userStateWithRewards);
+		asyncRewardService.sendRewards(USER_ID, REWARDS);
 
 		// then
 		verify(kafkaTemplate).send(TOPIC, USER_ID, message);
@@ -53,9 +52,7 @@ public class AsyncRewardServiceTest {
 
 	@Test
 	void sendRewards_shouldNotSendRewards_ifThereAreNoRewardsToBeSent() {
-		var userStateWithoutRewards = UserState.builder().build();
-
-		asyncRewardService.sendRewards(userStateWithoutRewards);
+		asyncRewardService.sendRewards(USER_ID, List.of());
 
 		verifyNoInteractions(kafkaTemplate);
 	}
