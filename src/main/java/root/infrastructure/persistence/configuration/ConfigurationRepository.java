@@ -13,6 +13,7 @@ public interface ConfigurationRepository extends JpaRepository<ConfigurationEnti
 	@Query("FROM ConfigurationEntity configuration WHERE configuration.endTimestamp > :currentTimestamp")
 	List<ConfigurationEntity> getActiveAndPendingConfigurations(long currentTimestamp);
 
+	// todo: refactor query since not all cases are covered
 	@Query(
 			"FROM ConfigurationEntity configuration " +
 			"WHERE configuration.startTimestamp BETWEEN :startTimestamp AND :endTimestamp " +

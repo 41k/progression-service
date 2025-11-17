@@ -1,8 +1,6 @@
 package root.application.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import lombok.Builder;
@@ -16,15 +14,9 @@ public class UserState {
 	private UserConfiguration configuration;
 	@Builder.Default
 	private Map<ProgressionType, Long> progressions = new HashMap<>();
-	@Builder.Default
-	private List<Reward> rewards = new ArrayList<>();
 	private long version;
 
 	public ProgressionConfiguration getProgressionConfiguration(ProgressionType type) {
 		return configuration.progressionsConfiguration().get(type);
-	}
-
-	public void addReward(Reward reward) {
-		rewards.add(reward);
 	}
 }

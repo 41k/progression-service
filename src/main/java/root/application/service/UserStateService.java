@@ -54,8 +54,8 @@ public class UserStateService {
 				.orElseThrow(() -> new NoSuchElementException("Active user state is not found by id=" + userId));
 	}
 
-	public Optional<UserState> updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
-		return optimisticLockRetryTemplate.execute(context -> {
+	public void updateUserStateIfPresent(String userId, Function<UserState, UserState> updateFunction) {
+		optimisticLockRetryTemplate.execute(context -> {
 			if (context.getRetryCount() > 0) {
 				log.warn("Optimistic lock happened during user[{}] state update. Retry {}", userId, context.getRetryCount());
 			}

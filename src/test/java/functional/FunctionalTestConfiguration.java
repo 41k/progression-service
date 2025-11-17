@@ -26,12 +26,17 @@ public class FunctionalTestConfiguration {
 	}
 
 	@Bean
-	public KafkaProducer kafkaProducer() {
+	public KafkaProducer<String, String> kafkaProducer() {
 		return new KafkaProducer<>(Map.of(
 				ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers,
 				ProducerConfig.CLIENT_ID_CONFIG, "kafka-producer-1",
 				ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
 				ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class
 		));
+	}
+
+	@Bean(destroyMethod = "close")
+	public KafkaTestConsumer rewardsTopicConsumer(@Value("${rewards-topic}") String topic) {
+		return new KafkaTestConsumer(topic, kafkaBrokers);
 	}
 }

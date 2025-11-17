@@ -232,10 +232,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(expectedUpdatedUserState)).thenReturn(expectedUpdatedUserState);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
-
-		// then
-		assertThat(updatedUserState).isEqualTo(expectedUpdatedUserState);
+		userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
@@ -255,10 +252,7 @@ public class UserStateServiceTest {
 		when(userStatePersistenceService.save(UPDATED_USER_STATE)).thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
-
-		// then
-		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);
+		userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
 
 		// and
 		verify(userStatePersistenceService).find(USER_ID);
@@ -270,7 +264,7 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void updateUserStateIfPresent_shouldNotReturnUpdatedUserState_ifConfigurationNoLongerApplicableForUser() {
+	void updateUserStateIfPresent_shouldNotUpdateUserState_ifConfigurationNoLongerApplicableForUser() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(CONFIGURATION);
@@ -278,12 +272,9 @@ public class UserStateServiceTest {
 		when(segmentationService.evaluate(USER_ID, SEGMENTS)).thenReturn(null);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
+		userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
 
 		// then
-		assertThat(updatedUserState.isEmpty()).isTrue();
-
-		// and
 		verify(userStatePersistenceService).find(USER_ID);
 		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService).shouldReevaluateSegmentation(CONFIGURATION_UPDATE_TIMESTAMP);
@@ -293,18 +284,15 @@ public class UserStateServiceTest {
 	}
 
 	@Test
-	void updateUserStateIfPresent_shouldNotReturnUpdatedUserState_ifConfigurationNoLongerExist() {
+	void updateUserStateIfPresent_shouldNotUpdateUserState_ifConfigurationNoLongerExist() {
 		// given
 		when(userStatePersistenceService.find(USER_ID)).thenReturn(Optional.of(USER_STATE));
 		when(configurationService.getActiveConfigurationById(CONFIGURATION_ID)).thenReturn(null);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
+		userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
 
 		// then
-		assertThat(updatedUserState.isEmpty()).isTrue();
-
-		// and
 		verify(userStatePersistenceService).find(USER_ID);
 		verify(configurationService).getActiveConfigurationById(CONFIGURATION_ID);
 		verify(segmentationService, never()).shouldReevaluateSegmentation(anyLong());
@@ -325,10 +313,7 @@ public class UserStateServiceTest {
 				.thenReturn(UPDATED_USER_STATE);
 
 		// when
-		var updatedUserState = userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION).orElseThrow();
-
-		// then
-		assertThat(updatedUserState).isEqualTo(UPDATED_USER_STATE);
+		userStateService.updateUserStateIfPresent(USER_ID, USER_STATE_UPDATE_FUNCTION);
 
 		// and
 		verify(userStatePersistenceService, times(3)).find(USER_ID);

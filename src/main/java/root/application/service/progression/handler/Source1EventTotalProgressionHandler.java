@@ -6,8 +6,9 @@ import root.application.model.ProgressionType;
 import root.application.model.event.Event;
 import root.application.model.event.Source1Event;
 
+// todo: functional test
 @Component
-public class Source1EventTotalProgressionHandler extends Source1EventProgressionHandler {
+public class Source1EventTotalProgressionHandler extends ProgressionHandler {
 
 	@Override
 	public boolean isEligible(Event event) {
@@ -18,5 +19,10 @@ public class Source1EventTotalProgressionHandler extends Source1EventProgression
 	@Override
 	protected ProgressionType getProgressionType() {
 		return ProgressionType.SOURCE_1_TOTAL;
+	}
+
+	@Override
+	protected Long getAdjustedProgressionValue(Long currentProgressionValue, Event event) {
+		return currentProgressionValue + 1;
 	}
 }

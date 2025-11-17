@@ -5,12 +5,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static unit.UnitTestData.EVENT;
 import static unit.UnitTestData.USER_ID;
-import static unit.UnitTestData.USER_STATE;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,31 +39,29 @@ public class ProgressionServiceTest {
 	private UserStateService userStateService;
 	@Mock
 	private RewardService rewardService;
-	private ProgressionProperties progressionProperties;
-	private Map<String, ProgressionHandler> progressionHandlers;
-	private ProgressionUpdateTask progressionUpdateTask;
 	private ProgressionService progressionService;
 
 	@BeforeEach
 	void setUp() {
-		progressionProperties = new ProgressionProperties(Map.of(
+		ProgressionProperties progressionProperties = new ProgressionProperties(Map.of(
 				EventSource.SOURCE_1,
 				new EventSourceProperties(true, "source-1", new LinkedHashSet<>(List.of(PROGRESSION_HANDLER_1_NAME, PROGRESSION_HANDLER_2_NAME)))
 		));
-		progressionHandlers = Map.of(
+		Map<String, ProgressionHandler> progressionHandlers = Map.of(
 				PROGRESSION_HANDLER_1_NAME, progressionHandler1,
 				PROGRESSION_HANDLER_2_NAME, progressionHandler2
 		);
-		progressionUpdateTask = new ProgressionUpdateTask(EVENT, List.of(progressionHandler1, progressionHandler2));
 		progressionService = new ProgressionService(progressionProperties, progressionHandlers, userStateService, rewardService);
 	}
 
 	@Test
 	void process_shouldProcessEventSuccessfully() {
 		// given
-		when(progressionHandler1.isEligible(EVENT)).thenReturn(true);
+		ProgressionUpdateTask progressionUpdateTask = new ProgressionUpdateTask(EVENT, List.of(progressionHandler2));
+
+		// and
+		when(progressionHandler1.isEligible(EVENT)).thenReturn(false);
 		when(progressionHandler2.isEligible(EVENT)).thenReturn(true);
-		when(userStateService.updateUserStateIfPresent(USER_ID, progressionUpdateTask)).thenReturn(Optional.of(USER_STATE));
 
 		// when
 		progressionService.process(EVENT);
@@ -74,24 +70,7 @@ public class ProgressionServiceTest {
 		verify(progressionHandler1).isEligible(EVENT);
 		verify(progressionHandler2).isEligible(EVENT);
 		verify(userStateService).updateUserStateIfPresent(USER_ID, progressionUpdateTask);
-		verify(rewardService).sendRewards(USER_STATE);
-	}
-
-	@Test
-	void process_shouldSkipEventProcessing_ifUserStateIsNotFound() {
-		// given
-		when(progressionHandler1.isEligible(EVENT)).thenReturn(true);
-		when(progressionHandler2.isEligible(EVENT)).thenReturn(true);
-		when(userStateService.updateUserStateIfPresent(USER_ID, progressionUpdateTask)).thenReturn(Optional.empty());
-
-		// when
-		progressionService.process(EVENT);
-
-		// then
-		verify(progressionHandler1).isEligible(EVENT);
-		verify(progressionHandler2).isEligible(EVENT);
-		verify(userStateService).updateUserStateIfPresent(USER_ID, progressionUpdateTask);
-		verifyNoInteractions(rewardService);
+		verify(rewardService).sendRewards(USER_ID, List.of());
 	}
 
 	@Test
