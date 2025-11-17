@@ -42,6 +42,7 @@ import io.restassured.RestAssured;
 import lombok.SneakyThrows;
 import root.ApplicationRunner;
 import root.application.model.Configuration;
+import root.application.model.ProgressionType;
 import root.infrastructure.persistence.configuration.ConfigurationRepository;
 import root.infrastructure.persistence.state.UserStateDocument;
 import root.infrastructure.persistence.state.UserStateRepository;
@@ -103,6 +104,18 @@ public abstract class FunctionalTest {
 		assertUserState(expectedUserState);
 	}
 
+	// todo: check if used
+	protected void assertUserProgressionWithPolling(ProgressionType progressionType, long expectedProgressionValue) {
+		assertWithPolling(() -> assertUserProgression(progressionType, expectedProgressionValue));
+	}
+
+	// todo: check if used
+	@SneakyThrows
+	protected void waitAndAssertUserProgression(ProgressionType progressionType, long expectedProgressionValue) {
+		Thread.sleep(TWO_SECONDS);
+		assertUserProgression(progressionType, expectedProgressionValue);
+	}
+
 	protected void assertWithPolling(ThrowingRunnable assertion) {
 		Awaitility.await()
 				.atMost(TEN_SECONDS)
@@ -114,6 +127,12 @@ public abstract class FunctionalTest {
 	protected void assertUserState(UserStateDocument expectedUserState) {
 		var userState = userStateRepository.findById(USER_ID).orElseThrow();
 		assertThat(userState).isEqualTo(expectedUserState);
+	}
+
+	protected void assertUserProgression(ProgressionType progressionType, Long expectedProgressionValue) {
+		var userState = userStateRepository.findById(USER_ID).orElseThrow();
+		var progressionValue = userState.getProgressions().get(progressionType);
+		assertThat(progressionValue).isEqualTo(expectedProgressionValue);
 	}
 
 	protected Matcher<String> equalsToJson(String expectedJson) {

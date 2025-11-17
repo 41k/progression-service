@@ -35,6 +35,7 @@ public class FunctionalTestData {
 	public static final String SEGMENTATION_RESPONSE_BODY = getFileContent("http/response/segmentation-response-body.json");
 	public static final String SEGMENTATION_EMPTY_RESPONSE_BODY = "{}";
 	public static final String LOGIN_EVENT = getFileContent("kafka/login-event.json");
+	public static final String SOURCE_1_EVENT = getFileContent("kafka/source-1-event.json");
 	private static final String CONFIGURATION_ENTITY = getFileContent("db/configuration/configuration-entity.json");
 	private static final String CONFIGURATION_ENTITY_BEFORE_UPDATE = getFileContent("db/configuration/configuration-entity-before-update.json");
 	private static final UserStateDocument USER_STATE = deserialize("db/state/user-state.json", UserStateDocument.class);

@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import root.application.model.event.Event;
 import root.application.service.progression.handler.ProgressionHandler;
 
-@Value
 @Slf4j
+@Value
 public class ProgressionUpdateTask implements Function<UserState, UserState> {
 
 	Event event;
