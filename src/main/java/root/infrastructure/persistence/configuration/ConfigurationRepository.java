@@ -10,15 +10,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ConfigurationRepository extends JpaRepository<ConfigurationEntity, Long>, JpaSpecificationExecutor<ConfigurationEntity> {
 
-	@Query("FROM ConfigurationEntity configuration WHERE configuration.endTimestamp > :currentTimestamp")
+	@Query("FROM ConfigurationEntity c WHERE c.endTimestamp > :currentTimestamp")
 	List<ConfigurationEntity> getActiveAndPendingConfigurations(long currentTimestamp);
 
-	// todo: refactor query since not all cases are covered
-	@Query(
-			"FROM ConfigurationEntity configuration " +
-			"WHERE configuration.startTimestamp BETWEEN :startTimestamp AND :endTimestamp " +
-			"OR configuration.endTimestamp BETWEEN :startTimestamp AND :endTimestamp"
-	)
+	@Query("FROM ConfigurationEntity c WHERE c.startTimestamp < :endTimestamp AND c.endTimestamp > :startTimestamp")
 	List<ConfigurationEntity> getConfigurationsWithTimeRangeIntersection(long startTimestamp, long endTimestamp);
 
 	@Query(value = "TRUNCATE TABLE configurations", nativeQuery = true)
