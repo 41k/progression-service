@@ -17,11 +17,19 @@
           "unitId": 4,
           "amount": 700
         }
+      },
+      "SOURCE_2": {
+        "progressionTarget": 400,
+        "reward": {
+          "unitId": 4,
+          "amount": 1400
+        }
       }
     }
   },
   "progressions": {
     "SOURCE_1_TOTAL": 2,
-    "SOURCE_1_WON": 1
+    "SOURCE_1_WON": 1,
+    "SOURCE_2": 150
   }
 }

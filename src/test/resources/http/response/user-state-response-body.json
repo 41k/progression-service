@@ -16,6 +16,14 @@
         "unitId": 1,
         "amount": 200
       }
+    },
+    "SOURCE_2": {
+      "currentValue": 0,
+      "targetValue": 320,
+      "reward": {
+        "unitId": 3,
+        "amount": 1000
+      }
     }
   }
 }

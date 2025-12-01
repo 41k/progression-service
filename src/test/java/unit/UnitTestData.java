@@ -2,6 +2,7 @@ package unit;
 
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
+import static root.application.model.ProgressionType.SOURCE_2;
 
 import java.util.Map;
 import java.util.Set;
@@ -41,22 +42,26 @@ public class UnitTestData {
 
 	public static final Map<ProgressionType, ProgressionConfigurationDto> PROGRESSIONS_CONFIGURATION_DTO_1 = Map.of(
 			SOURCE_1_TOTAL, new ProgressionConfigurationDto(10, REWARD_DTO_1),
-			SOURCE_1_WON, new ProgressionConfigurationDto(5, REWARD_DTO_1)
+			SOURCE_1_WON, new ProgressionConfigurationDto(5, REWARD_DTO_1),
+			SOURCE_2, new ProgressionConfigurationDto(230, REWARD_DTO_1)
 	);
 
 	public static final Map<ProgressionType, ProgressionConfigurationDto> PROGRESSIONS_CONFIGURATION_DTO_2 = Map.of(
 			SOURCE_1_TOTAL, new ProgressionConfigurationDto(15, REWARD_DTO_2),
-			SOURCE_1_WON, new ProgressionConfigurationDto(8, REWARD_DTO_2)
+			SOURCE_1_WON, new ProgressionConfigurationDto(8, REWARD_DTO_2),
+			SOURCE_2, new ProgressionConfigurationDto(380, REWARD_DTO_2)
 	);
 
 	public static final Map<ProgressionType, ProgressionConfiguration> PROGRESSIONS_CONFIGURATION_1 = Map.of(
 			SOURCE_1_TOTAL, new ProgressionConfiguration(10, REWARD_1),
-			SOURCE_1_WON, new ProgressionConfiguration(5, REWARD_1)
+			SOURCE_1_WON, new ProgressionConfiguration(5, REWARD_1),
+			SOURCE_2, new ProgressionConfiguration(230, REWARD_1)
 	);
 
 	public static final Map<ProgressionType, ProgressionConfiguration> PROGRESSIONS_CONFIGURATION_2 = Map.of(
 			SOURCE_1_TOTAL, new ProgressionConfiguration(15, REWARD_2),
-			SOURCE_1_WON, new ProgressionConfiguration(8, REWARD_2)
+			SOURCE_1_WON, new ProgressionConfiguration(8, REWARD_2),
+			SOURCE_2, new ProgressionConfiguration(380, REWARD_2)
 	);
 
 	public static final Map<String, Map<ProgressionType, ProgressionConfigurationDto>> SEGMENTED_PROGRESSIONS_CONFIGURATION_DTO = Map.of(

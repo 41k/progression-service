@@ -37,7 +37,9 @@ public class FunctionalTestData {
 	public static final String LOGIN_EVENT = getFileContent("kafka/login-event.json");
 	public static final String SOURCE_1_EVENT_FOR_TOTAL_PROGRESSION = getFileContent("kafka/source-1-event-for-total-progression.json");
 	public static final String SOURCE_1_EVENT_FOR_WON_PROGRESSION = getFileContent("kafka/source-1-event-for-won-progression.json");
+	public static final String SOURCE_2_EVENT = getFileContent("kafka/source-2-event.json");
 	public static final String SOURCE_1_PROGRESSION_REWARD_MESSAGE = getFileContent("kafka/source-1-progression-reward-message.json");
+	public static final String SOURCE_2_PROGRESSION_REWARD_MESSAGE = getFileContent("kafka/source-2-progression-reward-message.json");
 	private static final String CONFIGURATION_ENTITY = getFileContent("db/configuration/configuration-entity.json");
 	private static final String CONFIGURATION_ENTITY_BEFORE_UPDATE = getFileContent("db/configuration/configuration-entity-before-update.json");
 	private static final String USER_STATE = getFileContent("db/state/user-state.json");

@@ -7,7 +7,6 @@ import root.application.model.Reward;
 import root.application.model.UserState;
 import root.application.model.event.Event;
 
-// todo: source-2 event progression handler
 public abstract class ProgressionHandler {
 
 	private static final Long INITIAL_PROGRESSION_VALUE = 0L;

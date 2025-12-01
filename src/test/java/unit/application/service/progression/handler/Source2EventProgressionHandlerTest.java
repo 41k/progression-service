@@ -5,8 +5,10 @@ import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static root.application.model.ProgressionType.SOURCE_1_TOTAL;
 import static root.application.model.ProgressionType.SOURCE_1_WON;
+import static root.application.model.ProgressionType.SOURCE_2;
 import static unit.UnitTestData.REWARD_1;
 import static unit.UnitTestData.USER_CONFIGURATION;
+import static unit.UnitTestData.USER_ID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,13 +22,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import root.application.model.UserConfiguration;
 import root.application.model.UserState;
 import root.application.model.event.Event;
-import root.application.model.event.Source1Event;
-import root.application.service.progression.handler.Source1EventWonProgressionHandler;
+import root.application.model.event.Source2Event;
+import root.application.service.progression.handler.Source2EventProgressionHandler;
 
-public class Source1EventWonProgressionHandlerTest {
+public class Source2EventProgressionHandlerTest {
 
-	private static final Source1EventWonProgressionHandler HANDLER = new Source1EventWonProgressionHandler();
-	private static final Source1Event EVENT = new Source1Event();
+	private static final Source2EventProgressionHandler HANDLER = new Source2EventProgressionHandler();
+	private static final Source2Event EVENT = new Source2Event(USER_ID, 50);
 
 	@ParameterizedTest
 	@MethodSource("eligibilityCheckParams")
@@ -40,8 +42,8 @@ public class Source1EventWonProgressionHandlerTest {
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
-					put(SOURCE_1_TOTAL, 7L);
-					put(SOURCE_1_WON, 3L);
+					put(SOURCE_1_TOTAL, 5L);
+					put(SOURCE_2, 100L);
 				}})
 				.build();
 
@@ -51,8 +53,8 @@ public class Source1EventWonProgressionHandlerTest {
 		// then
 		assertThat(reward.isEmpty()).isTrue();
 		assertThat(userState.getProgressions()).isEqualTo(Map.of(
-				SOURCE_1_TOTAL, 7L,
-				SOURCE_1_WON, 4L
+				SOURCE_1_TOTAL, 5L,
+				SOURCE_2, 150L
 		));
 	}
 
@@ -62,8 +64,8 @@ public class Source1EventWonProgressionHandlerTest {
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
-					put(SOURCE_1_TOTAL, 6L);
-					put(SOURCE_1_WON, 4L);
+					put(SOURCE_2, 200L);
+					put(SOURCE_1_WON, 7L);
 				}})
 				.build();
 
@@ -73,8 +75,8 @@ public class Source1EventWonProgressionHandlerTest {
 		// then
 		assertThat(reward).isEqualTo(REWARD_1);
 		assertThat(userState.getProgressions()).isEqualTo(Map.of(
-				SOURCE_1_TOTAL, 6L,
-				SOURCE_1_WON, 0L
+				SOURCE_2, 0L,
+				SOURCE_1_WON, 7L
 		));
 	}
 
@@ -86,7 +88,7 @@ public class Source1EventWonProgressionHandlerTest {
 						UserConfiguration.builder().progressionsConfiguration(Map.of()).build()
 				)
 				.progressions(new HashMap<>() {{
-					put(SOURCE_1_TOTAL, 4L);
+					put(SOURCE_2, 60L);
 					put(SOURCE_1_WON, 1L);
 				}})
 				.build();
@@ -97,17 +99,16 @@ public class Source1EventWonProgressionHandlerTest {
 		// then
 		assertThat(reward.isEmpty()).isTrue();
 		assertThat(userState.getProgressions()).isEqualTo(Map.of(
-				SOURCE_1_TOTAL, 4L,
+				SOURCE_2, 60L,
 				SOURCE_1_WON, 1L
 		));
 	}
 
 	private static Stream<Arguments> eligibilityCheckParams() {
 		return Stream.of(
-				Arguments.of(Source1Event.builder().userId(null).build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result(null).build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result("WIN").build(), FALSE),
-				Arguments.of(Source1Event.builder().userId(1L).result("WON").build(), TRUE)
+				Arguments.of(Source2Event.builder().userId(null).build(), FALSE),
+				Arguments.of(Source2Event.builder().userId("").build(), FALSE),
+				Arguments.of(Source2Event.builder().userId("10").build(), TRUE)
 		);
 	}
 }

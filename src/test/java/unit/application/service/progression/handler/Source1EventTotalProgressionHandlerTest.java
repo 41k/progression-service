@@ -26,6 +26,7 @@ import root.application.service.progression.handler.Source1EventTotalProgression
 public class Source1EventTotalProgressionHandlerTest {
 
 	private static final Source1EventTotalProgressionHandler HANDLER = new Source1EventTotalProgressionHandler();
+	private static final Source1Event EVENT = new Source1Event();
 
 	@ParameterizedTest
 	@MethodSource("eligibilityCheckParams")
@@ -36,7 +37,6 @@ public class Source1EventTotalProgressionHandlerTest {
 	@Test
 	void handle_shouldIncreaseProgression_ifProgressionThresholdIsNotReached() {
 		// given
-		var event = new Source1Event();
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
@@ -46,7 +46,7 @@ public class Source1EventTotalProgressionHandlerTest {
 				.build();
 
 		// when
-		var reward = HANDLER.handle(event, userState);
+		var reward = HANDLER.handle(EVENT, userState);
 
 		// then
 		assertThat(reward.isEmpty()).isTrue();
@@ -59,7 +59,6 @@ public class Source1EventTotalProgressionHandlerTest {
 	@Test
 	void handle_shouldResetProgressionToZero_andReturnReward_ifProgressionThresholdIsReached() {
 		// given
-		var event = new Source1Event();
 		var userState = UserState.builder()
 				.configuration(USER_CONFIGURATION)
 				.progressions(new HashMap<>() {{
@@ -69,7 +68,7 @@ public class Source1EventTotalProgressionHandlerTest {
 				.build();
 
 		// when
-		var reward = HANDLER.handle(event, userState).orElseThrow();
+		var reward = HANDLER.handle(EVENT, userState).orElseThrow();
 
 		// then
 		assertThat(reward).isEqualTo(REWARD_1);
@@ -82,7 +81,6 @@ public class Source1EventTotalProgressionHandlerTest {
 	@Test
 	void handle_shouldNotIncreaseProgression_ifProgressionConfigurationIsMissed() {
 		// given
-		var event = new Source1Event();
 		var userState = UserState.builder()
 				.configuration(
 						UserConfiguration.builder().progressionsConfiguration(Map.of()).build()
@@ -94,7 +92,7 @@ public class Source1EventTotalProgressionHandlerTest {
 				.build();
 
 		// when
-		var reward = HANDLER.handle(event, userState);
+		var reward = HANDLER.handle(EVENT, userState);
 
 		// then
 		assertThat(reward.isEmpty()).isTrue();

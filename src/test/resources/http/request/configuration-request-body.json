@@ -17,6 +17,13 @@
           "unitId": 1,
           "amount": 100
         }
+      },
+      "SOURCE_2": {
+        "progressionTarget": 230,
+        "reward": {
+          "unitId": 4,
+          "amount": 1500
+        }
       }
     },
     "segment-2": {
@@ -32,6 +39,13 @@
         "reward": {
           "unitId": 1,
           "amount": 200
+        }
+      },
+      "SOURCE_2": {
+        "progressionTarget": 320,
+        "reward": {
+          "unitId": 3,
+          "amount": 1000
         }
       }
     }

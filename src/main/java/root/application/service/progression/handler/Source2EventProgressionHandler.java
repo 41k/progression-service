@@ -5,26 +5,24 @@ import org.springframework.stereotype.Component;
 
 import root.application.model.ProgressionType;
 import root.application.model.event.Event;
-import root.application.model.event.Source1Event;
+import root.application.model.event.Source2Event;
 
 @Component
-public class Source1EventWonProgressionHandler extends ProgressionHandler {
-
-	private static final String WON_RESULT = "WON";
+public class Source2EventProgressionHandler extends ProgressionHandler {
 
 	@Override
 	public boolean isEligible(Event event) {
-		var source1Event = (Source1Event) event;
-		return StringUtils.isNotBlank(source1Event.getUserId()) && WON_RESULT.equalsIgnoreCase(source1Event.getResult());
+		return StringUtils.isNotBlank(event.getUserId());
 	}
 
 	@Override
 	protected ProgressionType getProgressionType() {
-		return ProgressionType.SOURCE_1_WON;
+		return ProgressionType.SOURCE_2;
 	}
 
 	@Override
 	protected Long calculateProgressionValue(Long currentProgressionValue, Event event) {
-		return currentProgressionValue + 1;
+		var source2Event = (Source2Event) event;
+		return currentProgressionValue + source2Event.getAmount();
 	}
 }

@@ -45,3 +45,8 @@ progression.sources:
     progression-handlers:
       - source1EventWonProgressionHandler
       - source1EventTotalProgressionHandler
+  SOURCE_2:
+    enabled: true
+    topic: source-2
+    progression-handlers:
+      - source2EventProgressionHandler
